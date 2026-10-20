@@ -1,8 +1,6 @@
-<<<<<<< HEAD
 .env
 .venv/
 __pycache__/
-=======
 # models
 *.pt
 models/**
@@ -14,4 +12,3 @@ models/**
 
 # venv
 venv/**
->>>>>>> a79fd5587141391e4671723906dd005d8087f90f
