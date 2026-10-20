@@ -1,3 +1,17 @@
+<<<<<<< HEAD
 .env
 .venv/
 __pycache__/
+=======
+# models
+*.pt
+models/**
+
+# images
+*.jpg
+*.jpeg
+*.png
+
+# venv
+venv/**
+>>>>>>> a79fd5587141391e4671723906dd005d8087f90f
