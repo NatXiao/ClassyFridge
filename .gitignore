@@ -1,0 +1,11 @@
+# models
+*.pt
+models/**
+
+# images
+*.jpg
+*.jpeg
+*.png
+
+# venv
+venv/**
