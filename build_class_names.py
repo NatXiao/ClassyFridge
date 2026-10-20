@@ -1,4 +1,5 @@
 import json
+
 from datasets import load_dataset
 
 ds = load_dataset("ibrahimdaud/raw-food-recognition", split="train")
