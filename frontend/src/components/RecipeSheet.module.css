@@ -1,0 +1,261 @@
+/* ==========================================================================
+   RecipeSheet — fiche recette posée sur la table
+   Structure : .sheet > .head (titre + méta) / .image / .columns
+                        .columns > .ingredients / .steps
+   ========================================================================== */
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 36px;
+  background: var(--paper);
+  border-radius: 20px;
+  box-shadow: 0 24px 40px -24px rgb(40 22 8 / 0.55);
+}
+
+
+/* --------------------------------------------------------------------------
+   En-tête — titre à gauche, temps + portions à droite
+   -------------------------------------------------------------------------- */
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #EDE6D6;
+}
+
+.title {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -1px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Pastille de temps de préparation */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-weight: 600;
+  background: #F2EBDC;
+  border-radius: 999px;
+}
+
+/* --- Sélecteur de portions  −  n portions  + ----------------------------- */
+
+.portions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  font-weight: 600;
+  background: #F2EBDC;
+  border-radius: 999px;
+}
+
+.portions span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+}
+
+.portions button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--ink);
+  background: #fff;
+  border: 0;
+  border-radius: 50%;
+}
+
+.portions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+/* --------------------------------------------------------------------------
+   Photo de la recette
+   -------------------------------------------------------------------------- */
+
+.image {
+  width: 100%;
+  max-height: 340px;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Colonnes — ingrédients (1/3) + instructions (2/3), empilées si étroit
+   -------------------------------------------------------------------------- */
+
+.columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.columns h3 {
+  font-size: 22px;
+}
+
+.ingredients {
+  display: flex;
+  flex: 1 1 300px;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.steps {
+  display: flex;
+  flex: 2 1 440px;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Ingrédients — groupés « Dans ton frigo » / « À ajouter »
+   -------------------------------------------------------------------------- */
+
+/* Sous-titres de groupe */
+.groupYes,
+.groupMissing {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.groupYes {
+  color: var(--yes);
+}
+
+.groupMissing {
+  color: #4B5963;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Une ligne : icône · quantité · nom · (alerte stock) */
+.list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.amount {
+  min-width: 64px;
+  font-weight: 700;
+}
+
+.name {
+  font-weight: 500;
+}
+
+/* Alerte « tu en as n » quand le stock ne suffit pas */
+.short {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8A2C17;
+  background: #FBE3DC;
+  border-radius: 999px;
+}
+
+/* --- Icônes de ligne : coche pleine / plus en pointillés ----------------- */
+
+.iconYes,
+.iconMissing {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
+.iconYes {
+  color: #fff;
+  background: var(--yes);
+}
+
+.iconMissing {
+  color: #6B6352;
+  border: 2px dashed #B8AE98;
+}
+
+
+/* --------------------------------------------------------------------------
+   Instructions — étapes numérotées
+   -------------------------------------------------------------------------- */
+
+.steps ol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+/* padding-top aligne la 1re ligne de texte sur le centre du numéro */
+.steps p {
+  margin: 0;
+  padding-top: 8px;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* Rond noir avec le numéro d'étape */
+.stepNum {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: #fff;
+  background: var(--ink);
+  border-radius: 50%;
+}

@@ -15,7 +15,7 @@ export function Fridge({ children, door = true }: { children: ReactNode; door?: 
           className={s.door}
           aria-hidden="true"
           initial={{ rotateY: 0 }}
-          animate={{ rotateY: 118 }}
+          animate={{ rotateY: 105 }}
           transition={{ delay: 0.3, duration: 1, ease: [0.3, 0, 0.2, 1] }}
         >
           <div className={s.doorFront}><span className={s.handle} /></div>

@@ -1,5 +1,6 @@
 import type { Dispatch } from 'react'
 import { useMutation } from '@tanstack/react-query'
+import { Door } from '../components/Door'
 import { ArrowDown } from 'lucide-react'
 import { suggestRecipes, type Analysis } from '../api/client'
 import { label, cropSrc } from '../api/labels'
@@ -26,7 +27,6 @@ export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
       unsure: Math.min(...items.map((i) => i.confidence)) < 0.6,
     }
   })
-
   const shelves = Array.from({ length: Math.ceil(cards.length / SHELF_SIZE) }, (_, i) =>
     cards.slice(i * SHELF_SIZE, (i + 1) * SHELF_SIZE),
   )
@@ -42,7 +42,7 @@ export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
       suggestRecipes(
         Object.entries(decisions)
           .filter(([, d]) => d.status === 'yes')
-          .map(([ingredient_name, d]) => ({ ingredient_name, instance_count: d.qty })),
+          .map(([ingredient_name, d]) => ({ ingredient_name, instance_count: d.qty, unit: '' as const })),
       ),
     onSuccess: (result) => dispatch({ type: 'recipesReady', recipes: result }),
   })
@@ -79,25 +79,27 @@ export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
           </Fridge>
         </div>
 
-        <aside className={s.door}>
-          <h2 className={s.recapTitle}>Récap</h2>
-          <p className={s.stat}><span>Validés</span><strong className={s.yes}>{yes}</strong></p>
-          <p className={s.stat}><span>Refusés</span><strong className={s.no}>{no}</strong></p>
-          <p className={s.stat}><span>À vérifier</span><strong>{pending}</strong></p>
+        <Door>
+          <aside aria-label="Récapitulatif" className={s.recap}>
+            <h2 className={s.recapTitle}>Récap</h2>
+            <p className={s.stat}><span>Validés</span><strong className={s.yes}>{yes}</strong></p>
+            <p className={s.stat}><span>Refusés</span><strong className={s.no}>{no}</strong></p>
+            <p className={s.stat}><span>À vérifier</span><strong>{pending}</strong></p>
 
-          <div className={s.ctaZone}>
-            <button type="button" className={s.cta} disabled={!canContinue || recipes.isPending} onClick={() => recipes.mutate()}>
-              {recipes.isPending ? 'On cherche…' : 'Voir les 3 recettes'} <ArrowDown size={18} />
-            </button>
-            {!canContinue && (
-              <p className={s.hint}>
-                {pending > 0 ? `Encore ${pending} aliment${pending > 1 ? 's' : ''} à vérifier` : 'Valide au moins un aliment'}
-              </p>
-            )}
-            {recipes.isError && <p className={s.error}>{recipes.error.message}</p>}
-            <button type="button" className={s.link} onClick={() => dispatch({ type: 'reset' })}>Changer de photo</button>
-          </div>
-        </aside>
+            <div className={s.ctaZone}>
+              <button type="button" className={s.cta} disabled={!canContinue || recipes.isPending} onClick={() => recipes.mutate()}>
+                {recipes.isPending ? 'On cherche…' : 'Voir les 3 recettes'} <ArrowDown size={18} />
+              </button>
+              {!canContinue && (
+                <p className={s.hint}>
+                  {pending > 0 ? `Encore ${pending} aliment${pending > 1 ? 's' : ''} à vérifier` : 'Valide au moins un aliment'}
+                </p>
+              )}
+              {recipes.isError && <p className={s.error}>{recipes.error.message}</p>}
+              <button type="button" className={s.link} onClick={() => dispatch({ type: 'reset' })}>Changer de photo</button>
+            </div>
+          </aside>
+        </Door>
       </div>
     </main>
   )

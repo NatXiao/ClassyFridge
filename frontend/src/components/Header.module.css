@@ -1,12 +1,94 @@
-.header { max-width: 1240px; margin: 0 auto; padding: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
-.logo { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -0.5px; }
-.accent { color: var(--accent); }
-.steps { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; font-size: 14px; font-weight: 600; }
-.steps li { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; }
-.dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; box-sizing: border-box; }
-.active { background: var(--ink); color: #fff; }
-.active .dot { background: #fff; color: var(--ink); }
-.done { color: var(--yes); }
-.done .dot { background: var(--yes); color: #fff; }
-.todo { color: var(--muted); }
-.todo .dot { border: 1.5px solid var(--muted); }
+/* ==========================================================================
+   Header — logo + fil d'Ariane des 3 étapes (Photo → Vérifier → Recettes)
+   ========================================================================== */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Logo « ClassyFridge »
+   -------------------------------------------------------------------------- */
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+/* « Fridge » en couleur d'accent */
+.accent {
+  color: var(--accent);
+}
+
+
+/* --------------------------------------------------------------------------
+   Étapes — une pastille numérotée par étape
+   -------------------------------------------------------------------------- */
+
+.steps {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+}
+
+/* Rond contenant le numéro (ou une coche une fois l'étape passée) */
+.dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  font-size: 12px;
+  border-radius: 50%;
+}
+
+/* --- États : étape en cours / terminée / à venir ------------------------- */
+
+.active {
+  color: #fff;
+  background: var(--ink);
+}
+
+.active .dot {
+  color: var(--ink);
+  background: #fff;
+}
+
+.done {
+  color: var(--yes);
+}
+
+.done .dot {
+  color: #fff;
+  background: var(--yes);
+}
+
+.todo {
+  color: var(--muted);
+}
+
+.todo .dot {
+  border: 1.5px solid var(--muted);
+}

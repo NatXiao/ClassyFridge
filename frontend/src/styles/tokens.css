@@ -1,12 +1,55 @@
+/* ==========================================================================
+   Design tokens & styles globaux
+   Chargé une seule fois dans main.tsx. Les modules CSS des composants ne
+   référencent que ces variables — pas de couleur « de marque » en dur ailleurs.
+   ========================================================================== */
+
 :root {
-  --bg: #EAF1EF;  --ink: #18222B;  --muted: #4B5963;
-  --fridge: #F8FAF8;  --fridge-border: #C3CFCB;  --interior: #FFFCF2;
-  --accent: #C2401F;  --yes: #1E7B4A;  --no: #B3261E;
-  --wood: #B98250;  --paper: #FFFDF7;
+  /* --- Base ------------------------------------------------------------- */
+  --bg: #EAF1EF;            /* fond de page, vert d'eau très pâle */
+  --ink: #18222B;           /* texte principal, boutons pleins */
+  --muted: #4B5963;         /* texte secondaire */
+
+  /* --- Frigo ------------------------------------------------------------ */
+  --fridge: #F8FAF8;        /* carrosserie */
+  --fridge-border: #C3CFCB; /* contours, joints, bacs de porte */
+  --interior: #FFFCF2;      /* intérieur éclairé (blanc chaud) */
+
+  /* --- Sémantique ------------------------------------------------------- */
+  --accent: #C2401F;        /* action principale (orange tomate) */
+  --yes: #1E7B4A;           /* aliment validé */
+  --no: #B3261E;            /* aliment refusé, erreurs */
+
+  /* --- Table & recettes ------------------------------------------------- */
+  --wood: #B98250;          /* plateau de la table */
+  --paper: #FFFDF7;         /* fiches recette, chips */
+
+  /* --- Typographie (polices chargées via @fontsource dans main.tsx) ----- */
   --font-display: 'Bricolage Grotesque', sans-serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
 }
 
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); }
-h1, h2, h3 { font-family: var(--font-display); margin: 0; }
-button { font: inherit; cursor: pointer; }
+
+/* --------------------------------------------------------------------------
+   Reset minimal
+   -------------------------------------------------------------------------- */
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-display);
+}
+
+/* Les boutons héritent de la police du parent au lieu de celle du navigateur */
+button {
+  font: inherit;
+  cursor: pointer;
+}

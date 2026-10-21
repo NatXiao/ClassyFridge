@@ -1,6 +1,6 @@
 import type { Analysis, Recipe } from '../api/client'
 
-export type Decision = { status: 'yes' | 'no' | null; qty: number }
+export type Decision = { status: 'yes' | 'no' | null; qty: number; unit: Unit; manual?: boolean }
 
 export type FlowState =
   | { step: 'upload' }
@@ -14,6 +14,8 @@ export type FlowAction =
   | { type: 'backToReview' }
   | { type: 'reset' }
 
+export type Unit = '' | 'g'
+
 export function flowReducer(state: FlowState, action: FlowAction): FlowState {
   switch (action.type) {
     case 'analyzed':
@@ -23,7 +25,7 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
         decisions: Object.fromEntries(
           action.analysis.ingredients.map((i) => [
             i.ingredient_name,
-            { status: null, qty: i.instance_count },
+            { status: null, qty: i.instance_count, unit: '' as Unit },
           ]),
         ),
       }

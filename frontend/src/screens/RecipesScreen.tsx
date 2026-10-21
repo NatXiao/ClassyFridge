@@ -1,10 +1,10 @@
 import { useState, type Dispatch } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { ArrowDown, Check, Plus, Clock } from 'lucide-react'
 import type { Recipe } from '../api/client'
 import { label } from '../api/labels'
 import type { Decision, FlowAction } from '../state/flow'
 import s from './RecipesScreen.module.css'
+import { RecipeSheet } from '../components/RecipeSheet'
 
 type Props = {
   recipes: Recipe[]
@@ -23,11 +23,6 @@ export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
         <span>Étagères vides — <strong>{pantry.length} aliments</strong> sont descendus sur la table</span>
         <button type="button" className={s.link} onClick={() => dispatch({ type: 'backToReview' })}>Modifier</button>
       </div>
-
-      <motion.div className={s.arrow} aria-hidden="true"
-        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <ArrowDown size={22} />
-      </motion.div>
 
       <section className={s.table} aria-label="La table">
         <ul className={s.pantry} aria-label="Aliments validés">
@@ -56,65 +51,27 @@ export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
               {recipes.map((r, i) => (
                 <button key={r.recipe_id} type="button" className={s.tab}
                   aria-pressed={i === selected} onClick={() => setSelected(i)}>
-                  <span className={s.tabNum}>Recette {i + 1}</span>
-                  <span className={s.tabTitle}>{r.title}</span>
-                  <span className={s.muted}>
-                    {r.preparation_time_minutes ? `${r.preparation_time_minutes} min · ` : ''}
-                    utilise {r.available_ingredients.length} de tes aliments
+                  {r.image_url
+                    ? <img className={s.tabThumb} src={r.image_url} alt="" />
+                    : <span className={s.tabThumb} aria-hidden="true" />}
+                  <span className={s.tabText}>
+                    <span className={s.tabNum}>Recette {i + 1} </span>
+                    <span className={s.tabTitle}>{r.title} </span>
+                    <span className={s.muted}>
+                      {r.preparation_time_minutes ? `${r.preparation_time_minutes} min · ` : ''}
+                      utilise {r.ingredients?.filter((x) => x.available).length ?? r.available_ingredients.length} de tes aliments
+                    </span>
                   </span>
                 </button>
               ))}
             </div>
 
             <AnimatePresence mode="wait">
-              <motion.article key={recipe.recipe_id} className={s.sheet}
+              <motion.div key={recipe.recipe_id}
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2 }}>
-                <header className={s.sheetHead}>
-                  <h2 className={s.sheetTitle}>{recipe.title}</h2>
-                  {recipe.preparation_time_minutes && (
-                    <span className={s.pill}><Clock size={16} /> {recipe.preparation_time_minutes} min</span>
-                  )}
-                </header>
-
-                <div className={s.columns}>
-                  <section className={s.ingredients} aria-label="Ingrédients">
-                    <h3>Ingrédients</h3>
-                    <p className={s.groupYes}>Dans ton frigo</p>
-                    <ul className={s.list}>
-                      {recipe.available_ingredients.map((name) => (
-                        <li key={name}>
-                          <span className={s.iconYes}><Check size={14} strokeWidth={3} /></span>
-                          <span className={s.ingName}>{label(name)}</span>
-                          {decisions[name] && <span className={s.muted}>tu en as {decisions[name].qty}</span>}
-                        </li>
-                      ))}
-                    </ul>
-                    {recipe.missing_ingredients.length > 0 && (
-                      <>
-                        <p className={s.groupMissing}>À ajouter</p>
-                        <ul className={s.list}>
-                          {recipe.missing_ingredients.map((name) => (
-                            <li key={name}>
-                              <span className={s.iconMissing}><Plus size={14} strokeWidth={3} /></span>
-                              {label(name)}
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    )}
-                  </section>
-
-                  <section className={s.steps} aria-label="Instructions">
-                    <h3>Instructions</h3>
-                    <ol>
-                      {recipe.instructions.map((step, i) => (
-                        <li key={i}><span className={s.stepNum}>{i + 1}</span><p>{step}</p></li>
-                      ))}
-                    </ol>
-                  </section>
-                </div>
-              </motion.article>
+                <RecipeSheet recipe={recipe} decisions={decisions} />
+              </motion.div>
             </AnimatePresence>
           </motion.div>
         )}
