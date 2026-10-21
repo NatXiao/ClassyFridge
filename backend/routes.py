@@ -36,8 +36,6 @@ async def create_analysis(
     content = await _read_image(image)
     return services.analyze_image(
         content,
-        filename=image.filename or "upload",
-        content_type=image.content_type or "application/octet-stream",
     )
 
 

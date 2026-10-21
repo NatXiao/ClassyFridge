@@ -2,6 +2,7 @@ import math
 from functools import lru_cache
 
 import cv2
+from handle_images import resize_image
 from ultralytics import FastSAM
 
 DEBUGGING = True
@@ -49,29 +50,6 @@ def remove_inner_masks(result):
 
     # keep only masks and boxes that are not inner masks
     return result[kept_indices]
-
-
-# resize the cropped images to the same size as the input of the classification model
-def resize_image(image, target_size=(IMG_SIZE, IMG_SIZE)):
-    original_height, original_width = image.shape[:2]
-    target_width, target_height = target_size
-
-    # scaling factors
-    scale_width = target_width / original_width
-    scale_height = target_height / original_height
-
-    scale = min(scale_width, scale_height)
-
-    # new dimensions
-    new_width = max(1, round(original_width * scale))
-    new_height = max(1, round(original_height * scale))
-
-    # Resize the image
-    resized_image = cv2.resize(
-        image, (new_width, new_height), interpolation=cv2.INTER_AREA
-    )
-
-    return resized_image
 
 
 # crop the image and return a list of cropped images that will be given to the classification model

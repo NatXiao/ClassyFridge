@@ -8,7 +8,7 @@ class HealthResponse(BaseModel):
 
 
 class DetectedIngredient(BaseModel):
-    item_id: UUID
+    item_id: int
     ingredient_name: str
     confidence: float = Field(ge=0, le=1)
 
