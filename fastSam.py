@@ -1,4 +1,5 @@
 import math
+from functools import lru_cache
 
 import cv2
 from ultralytics import FastSAM
@@ -9,8 +10,12 @@ IMG_SIZE = 224
 DEBUGGING_DIR = "debugging_images"
 RESIZE = False
 
+
+# loads model and caches it to avoid reloading it every time
+@lru_cache(maxsize=1)
 def get_fast_sam(model):
     return FastSAM(MODELS_PATH + "/" + model)
+
 
 # remove inner masks from the results
 def remove_inner_masks(result):
@@ -45,6 +50,7 @@ def remove_inner_masks(result):
     # keep only masks and boxes that are not inner masks
     return result[kept_indices]
 
+
 # resize the cropped images to the same size as the input of the classification model
 def resize_image(image, target_size=(IMG_SIZE, IMG_SIZE)):
     original_height, original_width = image.shape[:2]
@@ -61,12 +67,16 @@ def resize_image(image, target_size=(IMG_SIZE, IMG_SIZE)):
     new_height = max(1, round(original_height * scale))
 
     # Resize the image
-    resized_image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+    resized_image = cv2.resize(
+        image, (new_width, new_height), interpolation=cv2.INTER_AREA
+    )
 
     return resized_image
 
+
 # crop the image and return a list of cropped images that will be given to the classification model
 def crop_boxes(image, boxes):
+    image = cv2.imread(image)
 
     image_height, image_width = image.shape[:2]
     cropped_images = []
@@ -96,15 +106,50 @@ def crop_boxes(image, boxes):
         if RESIZE:
             cropped_image = resize_image(cropped_image)
         cropped_images.append(cropped_image)
-        
 
     return cropped_images
 
 
+# whole function to take an image, segment it, remove inner masks and crop the image into a list of cropped images that will be given to the classification model
+def segment_and_crop(image, img_size, confidence, iou):
+    model = get_fast_sam("FastSAM-x.pt")
+
+    results = model(
+        image,
+        retina_masks=True,
+        imgsz=img_size,
+        conf=confidence,
+        iou=iou,
+    )
+
+    result = remove_inner_masks(results[0])
+
+    if result.boxes is None or len(result.boxes) == 0:
+        return result, []
+
+    cropped_images = crop_boxes(image, result.boxes)
+
+    return result, cropped_images
+
+
 if __name__ == "__main__":
     model = get_fast_sam("FastSAM-x.pt")
-    img = "models_evaluation/data/fastSAM/food2.jpg"
+    img = "models_evaluation/data/fastSAM/food1.jpeg"
 
+    result, cropped_images = segment_and_crop(
+        img, img_size=1024, confidence=0.8, iou=0.5
+    )
+
+    if DEBUGGING:
+        for i, cropped_image in enumerate(cropped_images):
+            cv2.imwrite(f"{DEBUGGING_DIR}/cropped_image_{i + 1}.jpg", cropped_image)
+            cv2.imshow(f"Cropped image {i + 1}", cropped_image)
+
+        # Keep both windows open until a key is pressed, then close them.
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+    """
     results = model(
         img,
         retina_masks=True,
@@ -114,9 +159,7 @@ if __name__ == "__main__":
     )
 
     if DEBUGGING:
-        annotated_image = results[0].plot(
-            boxes=True, masks=True, labels=True
-        )
+        annotated_image = results[0].plot(boxes=True, masks=True, labels=True)
         cv2.imshow(
             f"Before removing inner masks - {len(results[0].boxes)} objects",
             annotated_image,
@@ -127,9 +170,7 @@ if __name__ == "__main__":
     results[0] = remove_inner_masks(results[0])
 
     if DEBUGGING:
-        annotated_image = results[0].plot(
-            boxes=True, masks=True, labels=True
-        )
+        annotated_image = results[0].plot(boxes=True, masks=True, labels=True)
         cv2.imshow(
             f"After removing inner masks - {len(results[0].boxes)} objects",
             annotated_image,
@@ -139,7 +180,7 @@ if __name__ == "__main__":
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    # crop images 
+    # crop images
     if DEBUGGING:
         cropped_images = crop_boxes(cv2.imread(img), results[0].boxes)
         for i, cropped_image in enumerate(cropped_images):
@@ -149,4 +190,4 @@ if __name__ == "__main__":
         # Keep both windows open until a key is pressed, then close them.
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-
+    """
