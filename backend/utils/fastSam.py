@@ -76,8 +76,6 @@ def resize_image(image, target_size=(IMG_SIZE, IMG_SIZE)):
 
 # crop the image and return a list of cropped images that will be given to the classification model
 def crop_boxes(image, boxes):
-    image = cv2.imread(image)
-
     image_height, image_width = image.shape[:2]
     cropped_images = []
 
