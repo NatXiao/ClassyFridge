@@ -73,11 +73,8 @@ export interface components {
         };
         /** DetectedIngredient */
         DetectedIngredient: {
-            /**
-             * Item Id
-             * Format: uuid
-             */
-            item_id: string;
+            /** Item Id */
+            item_id: number;
             /** Ingredient Name */
             ingredient_name: string;
             /** Confidence */
@@ -109,21 +106,34 @@ export interface components {
             recipe_id: string;
             /** Title */
             title: string;
-            /** Required Ingredients */
-            required_ingredients: string[];
-            /** Available Ingredients */
-            available_ingredients: string[];
-            /** Missing Ingredients */
-            missing_ingredients: string[];
-            /** Instructions */
-            instructions: string[];
+            /** Servings */
+            servings: number;
             /** Preparation Time Minutes */
             preparation_time_minutes?: number | null;
+            /** Ingredients */
+            ingredients: components["schemas"]["RecipeIngredient"][];
+            /** Instructions */
+            instructions: string[];
+            /** Source Url */
+            source_url?: string | null;
+        };
+        /** RecipeIngredient */
+        RecipeIngredient: {
+            /** Name */
+            name: string;
+            /** Amount */
+            amount: number;
+            /** Unit */
+            unit: string;
+            /** Original */
+            original: string;
+            /** Available */
+            available: boolean;
         };
         /** RecipeRequest */
         RecipeRequest: {
             /** Ingredients */
-            ingredients: components["schemas"]["IngredientCount"][];
+            ingredients: components["schemas"]["StockItem"][];
             /**
              * Max Missing Ingredients
              * @default 2
@@ -139,6 +149,19 @@ export interface components {
         RecipeResponse: {
             /** Recipes */
             recipes: components["schemas"]["Recipe"][];
+        };
+        /** StockItem */
+        StockItem: {
+            /** Ingredient Name */
+            ingredient_name: string;
+            /** Amount */
+            amount: number;
+            /**
+             * Unit
+             * @default
+             * @enum {string}
+             */
+            unit: "" | "g";
         };
         /** ValidationError */
         ValidationError: {

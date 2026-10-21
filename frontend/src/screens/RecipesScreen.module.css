@@ -1,0 +1,49 @@
+.layout { max-width: 1280px; margin: 0 auto; padding: 16px 24px 72px; display: flex; flex-direction: column; }
+.muted { color: #4B5963; font-weight: 600; }
+.link { border: 0; background: none; color: #B23A20; font-weight: 600; text-decoration: underline; }
+
+.fridgeBottom { align-self: center; width: 100%; max-width: 760px; box-sizing: border-box; background: var(--interior); border: 2px solid #E6DFC9; border-top: 0; border-radius: 0 0 18px 18px; box-shadow: 0 0 0 14px var(--fridge); padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; color: #3E4B55; }
+.arrow { align-self: center; padding: 22px 0 14px; color: #3E4B55; }
+
+.table { background-color: var(--wood); background-image: repeating-linear-gradient(180deg, transparent 0 78px, #A8703F 78px 80px); border-radius: 26px 26px 10px 10px; padding: 32px 28px 36px; display: flex; flex-direction: column; gap: 28px; }
+.tableEdge { height: 18px; margin: 0 24px; background: #8E5F35; border-radius: 0 0 14px 14px; }
+
+.pantry { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.chip { display: flex; align-items: center; gap: 10px; background: var(--paper); border-radius: 12px; padding: 8px 14px; font-weight: 600; }
+.chipDot { width: 20px; height: 20px; border-radius: 50%; background: #D9CDB2; }
+
+.title { color: #fff; text-align: center; font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+.tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.tab { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; padding: 18px 20px; border-radius: 16px; background: var(--paper); color: var(--ink); border: 3px solid transparent; transition: transform 0.15s, box-shadow 0.15s; }
+.tab[aria-pressed='true'] { border-color: var(--ink); transform: translateY(-4px); box-shadow: 0 14px 24px -14px rgb(40 22 8 / 0.6); }
+.tabNum { font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #B23A20; }
+.tabTitle { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+
+.sheet { background: var(--paper); border-radius: 20px; padding: 36px; box-shadow: 0 24px 40px -24px rgb(40 22 8 / 0.55); display: flex; flex-direction: column; gap: 28px; }
+.sheetHead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; border-bottom: 2px solid #EDE6D6; padding-bottom: 20px; }
+.sheetTitle { font-size: clamp(30px, 4vw, 44px); font-weight: 800; letter-spacing: -1px; line-height: 1; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: #F2EBDC; font-weight: 600; }
+
+.columns { display: flex; flex-wrap: wrap; gap: 40px; }
+.ingredients { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.steps { flex: 2 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.columns h3 { font-size: 22px; }
+.groupYes, .groupMissing { margin: 4px 0 0; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.groupYes { color: var(--yes); }
+.groupMissing { color: #4B5963; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.list li { display: flex; align-items: center; gap: 12px; }
+.ingName { font-weight: 600; margin-right: auto; }
+.iconYes, .iconMissing { flex: none; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; box-sizing: border-box; }
+.iconYes { background: var(--yes); color: #fff; }
+.iconMissing { border: 2px dashed #B8AE98; color: #6B6352; }
+
+.steps ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.steps li { display: flex; gap: 18px; align-items: flex-start; }
+.steps p { margin: 0; padding-top: 8px; font-size: 17px; line-height: 1.55; }
+.stepNum { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; }
+
+.footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 36px; }
+.secondary, .primary { min-height: 48px; padding: 0 22px; border-radius: 999px; font-weight: 700; }
+.secondary { border: 2px solid var(--ink); background: transparent; color: var(--ink); }
+.primary { border: 0; background: var(--ink); color: #fff; }

@@ -20,9 +20,10 @@ export async function mockAnalysis(): Promise<Analysis> {
   await delay(1200)
 
   // Toujours UN item par instance : 3 tomates = 3 items
+  let nextId = 0
   const items: Analysis['items'] = DETECTED.flatMap(([name, count, confidence]) =>
     Array.from({ length: count }, () => ({
-      item_id: crypto.randomUUID(),
+      item_id: nextId++,
       ingredient_name: name,
       confidence,
     })),

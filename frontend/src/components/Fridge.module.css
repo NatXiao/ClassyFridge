@@ -1,0 +1,11 @@
+.scene { position: relative; perspective: 1400px; width: 100%; }
+.body { background: var(--fridge); border: 2px solid var(--fridge-border); border-radius: 30px; padding: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 30px 60px -30px rgb(24 34 43 / 0.35); }
+.freezer { height: 90px; border-radius: 18px 18px 6px 6px; background: #EEF3F1; border: 2px solid #D3DDDA; display: flex; align-items: center; padding: 0 22px; }
+.interior { background: var(--interior); border: 2px solid #E6DFC9; border-radius: 6px 6px 18px 18px; padding: 22px; }
+.crisper { height: 44px; border-radius: 10px; background: #EEF3F1; border: 2px solid #D3DDDA; }
+.handle { width: 8px; height: 44px; border-radius: 4px; background: #AEBCB8; }
+.door { position: absolute; inset: 0; transform-origin: right center; transform-style: preserve-3d; pointer-events: none; }
+.doorFront, .doorBack { position: absolute; inset: 0; box-sizing: border-box; border-radius: 30px; border: 2px solid var(--fridge-border); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.doorFront { background: #F2F5F3; display: flex; align-items: center; padding-left: 24px; }
+.doorBack { background: #E9EFED; transform: rotateY(180deg); display: flex; flex-direction: column; justify-content: space-evenly; padding: 0 18px; }
+.bin { height: 36px; border-radius: 6px; background: #fff; border-bottom: 5px solid var(--fridge-border); }
