@@ -1,6 +1,8 @@
 from fastapi.testclient import TestClient
 
+from backend import services
 from backend.main import create_app
+from backend.schemas import AnalysisResponse, RecipeResponse
 
 
 client = TestClient(create_app())
@@ -38,13 +40,25 @@ def test_image_validation() -> None:
     assert empty.status_code == 400
 
 
-def test_unconnected_analysis_service_returns_501() -> None:
+def test_analysis_route(monkeypatch) -> None:
+    monkeypatch.setattr(
+        services,
+        "analyze_image",
+        lambda image: AnalysisResponse(items=[], ingredients=[]),
+    )
+
     response = client.post("/api/v1/analyses", files=image)
-    assert response.status_code == 501
-    assert response.json() == {"detail": "Analysis pipeline is not connected."}
+    assert response.status_code == 200
+    assert response.json() == {"items": [], "ingredients": []}
 
 
-def test_unconnected_recipe_service_returns_501() -> None:
+def test_recipe_suggestion_route(monkeypatch) -> None:
+    monkeypatch.setattr(
+        services,
+        "suggest_recipes",
+        lambda request: RecipeResponse(recipes=[]),
+    )
+
     response = client.post(
         "/api/v1/recipes/suggestions",
         json={
@@ -53,5 +67,5 @@ def test_unconnected_recipe_service_returns_501() -> None:
             ]
         },
     )
-    assert response.status_code == 501
-    assert response.json() == {"detail": "Recipe service is not connected."}
+    assert response.status_code == 200
+    assert response.json() == {"recipes": []}

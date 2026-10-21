@@ -13,6 +13,7 @@ from backend.schemas import (
 )
 from backend.utils.fastSam import segment_and_crop
 from backend.utils.handle_images import decode_image
+from backend.utils.recipes import get_recipe_suggestions
 
 
 class ServiceNotConfiguredError(RuntimeError):
@@ -67,4 +68,14 @@ def analyze_image(
 
 def suggest_recipes(request: RecipeRequest) -> RecipeResponse:
     """Call the existing recipe API and map its output to the response schema."""
-    raise ServiceNotConfiguredError("Recipe service is not connected.")
+    ingredient_names = list(
+        dict.fromkeys(
+            ingredient.ingredient_name.strip().lower() for ingredient in request.ingredients
+        )
+    )
+
+    recipes = get_recipe_suggestions(
+        ingredient_names
+    )
+
+    return RecipeResponse(recipes=recipes)

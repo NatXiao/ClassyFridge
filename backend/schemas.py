@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from pydantic import BaseModel, Field
 
 
@@ -25,13 +23,12 @@ class AnalysisResponse(BaseModel):
 
 class RecipeRequest(BaseModel):
     ingredients: list[IngredientCount] = Field(min_length=1)
-    max_missing_ingredients: int = Field(default=2, ge=0)
-    limit: int = Field(default=3, ge=1, le=10)
 
 
 class Recipe(BaseModel):
     recipe_id: str
     title: str
+    image_url: str | None = None
     required_ingredients: list[str]
     available_ingredients: list[str]
     missing_ingredients: list[str]
