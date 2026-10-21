@@ -11,12 +11,12 @@ from torchvision.models import resnet50
 REPO_ID = "ibrahimdaud/raw-food-recognition-models"
 CHECKPOINT_FILE = "resnet50_pytorch_model.bin"
 DATA_DIR = Path(__file__).resolve().parent / "training_data"
-EPOCHS = 5
+EPOCHS = 10
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-5
 SEED = 38
-SUBSET_TRAIN = 500
-SUBSET_VAL = 80
+SUBSET_TRAIN = 700
+SUBSET_VAL = 140
 
 checkpoint_path = hf_hub_download(
     repo_id=REPO_ID, filename=CHECKPOINT_FILE

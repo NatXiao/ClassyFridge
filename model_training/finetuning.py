@@ -32,7 +32,6 @@ def train(
         model.train()
         total, seen = 0.0, 0
         for xb, yb in train_load:
-            print(yb)
             xb, yb = xb.to(device), yb.to(device)
             optimizer.zero_grad()
             loss = loss_function(model(xb), yb)
@@ -60,12 +59,15 @@ def train(
             best_val, best_epoch = val_loss, epoch
             best_state = {k: v.clone() for k, v in model.state_dict().items()}
 
+    plt.figure()
     plt.plot(train_losses, label="train")
-    plt.plot(val_losses, label = "val")
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Training Loss')
-    plt.show()
+    plt.plot(val_losses, label="val")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training Loss")
+    plt.legend()
+    plt.savefig("training_loss.png", dpi=150, bbox_inches="tight")
+    plt.close()
 
     model.load_state_dict(best_state)
     print(f"meilleur modèle : époque {best_epoch}, val={best_val:.4f}")
