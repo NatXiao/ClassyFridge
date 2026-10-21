@@ -8,8 +8,17 @@ dependencies = [
     "bs4>=0.0.2",
     "python-dotenv>=1.2.4",
     "requests>=2.34.2",
+    "fastapi>=0.115.0",
     "matplotlib>=3.11.2",
     "numpy>=2.5.4",
+    "python-multipart>=0.0.20",
     "torch>=2.14.1",
     "ultralytics>=8.4.183",
+    "uvicorn>=0.34.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.0",
+    "pytest>=8.3.0",
 ]

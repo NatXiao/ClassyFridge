@@ -1,0 +1,1 @@
+"""ClassyFridge FastAPI backend."""

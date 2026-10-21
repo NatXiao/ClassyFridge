@@ -11,4 +11,9 @@ models/**
 *.png
 
 # venv
-venv/**
+.venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
