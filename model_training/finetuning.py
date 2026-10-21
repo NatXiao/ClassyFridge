@@ -44,11 +44,17 @@ def train(
         train_losses.append(train_loss)
 
         model.eval()
+        total, seen, correct = 0.0, 0, 0
         with torch.no_grad():
+            total, seen = 0.0, 0
             for xb, yb in val_load:
+                xb, yb = xb.to(device), yb.to(device)
                 val_logits = model(xb)
-                val_loss = loss_function(val_logits, yb).item()
-                val_losses.append(val_loss)
+                total += loss_function(val_logits, yb).item() * len(xb)
+                correct += (val_logits.argmax(1) == yb).sum().item()
+                seen += len(xb)
+        val_loss = total / seen
+        val_losses.append(val_loss) 
         print(f"epoch {epoch}: train={train_loss:.4f} val={val_loss:.4f}")
         if val_loss < best_val:
             best_val, best_epoch = val_loss, epoch
