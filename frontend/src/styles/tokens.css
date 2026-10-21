@@ -1,0 +1,8 @@
+:root {
+  --bg: #EAF1EF;  --ink: #18222B;  --muted: #4B5963;
+  --fridge: #F8FAF8;  --fridge-border: #C3CFCB;  --interior: #FFFCF2;
+  --accent: #C2401F;  --yes: #1E7B4A;  --no: #B3261E;
+  --wood: #B98250;  --paper: #FFFDF7;
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
