@@ -2,8 +2,9 @@ import math
 from functools import lru_cache
 
 import cv2
-from handle_images import resize_image
 from ultralytics import FastSAM
+
+from backend.utils.handle_images import resize_image
 
 DEBUGGING = True
 MODELS_PATH = "models"
