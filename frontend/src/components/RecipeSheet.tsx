@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Check, Plus, Minus, Clock, Users, AlertTriangle } from 'lucide-react'
 import type { Recipe } from '../api/client'
 import { label } from '../api/labels'
-import { formatAmount } from '../api/format'
-import type { Decision } from '../state/flow'
+import { formatAmount, toBase } from '../api/format'
+import { UNITS, formatQty, type Decision } from '../state/flow'
 import s from './RecipeSheet.module.css'
 
 type Props = { recipe: Recipe; decisions: Record<string, Decision> }
@@ -55,16 +55,18 @@ export function RecipeSheet({ recipe, decisions }: Props) {
               const need = ing.amount * scale
               const stock = stockFor(ing.name)
               // on ne compare que si les unités correspondent (pièces↔pièces, g↔g)
-              const comparable = stock && ((stock.unit === 'g' && ing.unit === 'g') || (stock.unit === '' && ['', 'large', 'medium', 'small'].includes(ing.unit)))
-              const short = comparable && stock.qty < need
+              const needB = toBase(need, ing.unit)
+              const haveB = stock ? toBase(stock.qty, stock.unit) : null
+              // on ne compare que des grandeurs de même nature (pièces, masse ou volume)
+              const short = !!needB && !!haveB && needB.kind === haveB.kind && haveB.value < needB.value
               return (
                 <li key={i}>
                   <span className={s.iconYes}><Check size={14} strokeWidth={3} /></span>
                   <span className={s.amount}>{formatAmount(need, ing.unit)}</span>
                   <span className={s.name}>{label(ing.name)}</span>
-                  {short && (
-                    <span className={s.short}><AlertTriangle size={14} /> tu en as {stock.qty}{stock.unit}</span>
-                  )}
+                {short && stock && (
+                  <span className={s.short}><AlertTriangle size={14} /> tu en as {formatQty(stock.qty)} {UNITS[stock.unit].short}</span>
+                )}
                 </li>
               )
             })}

@@ -11,6 +11,13 @@
   padding: 24px 24px 72px;
 }
 
+@media (max-width: 600px) {
+  .layout {
+    gap: 24px;
+    padding: 16px 16px 48px;
+  }
+}
+
 
 /* --------------------------------------------------------------------------
    Accroche
@@ -67,16 +74,33 @@
 
 /* --- Étagères ------------------------------------------------------------ */
 
+/* container-type : la grille s'adapte à la largeur de l'étagère, pas de l'écran */
 .shelf {
+  container: shelf / inline-size;
   margin-bottom: 28px;
 }
 
+.shelf:last-child {
+  margin-bottom: 0;
+}
+
+/* Toujours 4 emplacements par étagère (SHELF_SIZE) : une étagère
+   incomplète garde ses cartes à la même taille, alignées à gauche */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: clamp(8px, 2.5cqi, 18px);
   margin: 0;
   padding: 0 6px;
+}
+
+/* Étagère étroite (mobile) : les 4 emplacements passent en 2 × 2 */
+@container shelf (max-width: 460px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0;
+  }
 }
 
 /* Plaque de verre sous chaque rangée */
