@@ -99,12 +99,6 @@ export interface components {
             ingredient_name: string;
             /** Instance Count */
             instance_count: number;
-            /**
-             * Unit
-             * @default
-             * @enum {string}
-             */
-            unit: "" | "g";
         };
         /** Recipe */
         Recipe: {
@@ -126,21 +120,6 @@ export interface components {
             preparation_time_minutes?: number | null;
             /** Servings */
             servings?: number | null;
-            /** Ingredients */
-            ingredients?: components["schemas"]["RecipeIngredient"][];
-        };
-        /** RecipeIngredient */
-        RecipeIngredient: {
-            /** Name */
-            name: string;
-            /** Amount */
-            amount: number;
-            /** Unit */
-            unit: string;
-            /** Original */
-            original: string;
-            /** Available */
-            available: boolean;
         };
         /** RecipeRequest */
         RecipeRequest: {
