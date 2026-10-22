@@ -26,7 +26,17 @@ export function RecipeSheet({ recipe, decisions }: Props) {
     <article className={s.sheet}>
 
       <header className={s.head}>
-        <h2 className={s.title}>{recipe.title}</h2>
+        <div className={s.titleGroup}>
+          {recipe.image_url && (
+            <img
+              className={s.image}
+              src={recipe.image_url}
+              alt=""
+              onError={(event) => { event.currentTarget.hidden = true }}
+            />
+          )}
+          <h2 className={s.title}>{recipe.title}</h2>
+        </div>
         <div className={s.meta}>
           {recipe.preparation_time_minutes && (
             <span className={s.pill}><Clock size={16} /> {recipe.preparation_time_minutes} min</span>
@@ -42,9 +52,6 @@ export function RecipeSheet({ recipe, decisions }: Props) {
           )}
         </div>
       </header>
-      {recipe.image_url && (
-        <img className={s.image} src={recipe.image_url} alt={`Photo : ${recipe.title}`} />
-      )}
       <div className={s.columns}>
         <section className={s.ingredients} aria-label="Ingrédients">
           <h3>Ingrédients</h3>
