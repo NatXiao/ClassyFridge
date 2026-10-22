@@ -1,7 +1,10 @@
+import base64
+
 import cv2
 import numpy as np
 
-IMG_SIZE = 224 
+IMG_SIZE = 224
+
 
 # decode image bytes into a NumPy array
 def decode_image(image_bytes: bytes) -> np.ndarray:
@@ -13,6 +16,7 @@ def decode_image(image_bytes: bytes) -> np.ndarray:
         raise ValueError("Could not decode the uploaded image.")
 
     return image
+
 
 # resize an image to a target size while maintaining aspect ratio
 def resize_image(image, target_size=(IMG_SIZE, IMG_SIZE)):
@@ -36,3 +40,20 @@ def resize_image(image, target_size=(IMG_SIZE, IMG_SIZE)):
 
     return resized_image
 
+
+# encode a NumPy array image into bytes
+def encode_image(image: np.ndarray) -> bytes:
+    success, encoded_image = cv2.imencode(".jpg", image)
+
+    if not success:
+        raise ValueError("Could not encode image.")
+
+    return encoded_image.tobytes()
+
+
+# to use in the JSON schema we need to conver the image to base64 string
+def image_to_data_url(image: np.ndarray) -> str:
+    image_bytes = encode_image(image)
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+
+    return f"data:image/jpeg;base64,{encoded}"

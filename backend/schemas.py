@@ -8,6 +8,7 @@ class HealthResponse(BaseModel):
 class DetectedIngredient(BaseModel):
     item_id: int
     ingredient_name: str
+    image_url: str | None = None
     confidence: float = Field(ge=0, le=1)
 
 
