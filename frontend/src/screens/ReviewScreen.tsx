@@ -1,6 +1,6 @@
+import { useState, type Dispatch } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { ArrowDown } from 'lucide-react'
-import { useState, type Dispatch } from 'react'
 
 import {
   classifyImage,
@@ -81,8 +81,8 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
     && recipeOptions.limit <= 20
   )
 
-  // Group crops of the same detected food into decks.
-  // Manually added ingredients remain on their own.
+  // Crops of the same detected ingredient are displayed as one deck.
+  // Manually added ingredients each get their own deck.
   const decks = new Map<string, Decision[]>()
 
   for (const decision of Object.values(decisions)) {
@@ -104,25 +104,20 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
   )
 
   const allDecisions = Object.values(decisions)
-  const pending = allDecisions.filter(
-    (decision) => decision.status === null,
-  ).length
   const confirmed = allDecisions.filter(
     (decision) => decision.status === 'yes',
   ).length
-  const rejected = allDecisions.filter(
+  const discarded = allDecisions.filter(
     (decision) => decision.status === 'no',
   ).length
-  const classifying = allDecisions.filter(
+  const pending = allDecisions.length - confirmed - discarded
+  const waiting = allDecisions.filter(
     (decision) => decision.classifying,
   ).length
 
-  const canContinue = (
-    pending === 0
-    && confirmed > 0
-    && classifying === 0
-  )
+  const canContinue = pending === 0 && confirmed > 0
 
+  // Show the replacement picture immediately and classify it in the queue.
   const retake = (id: string, file: File) => {
     dispatch({
       type: 'retake',
@@ -136,174 +131,214 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
           type: 'classified',
           id,
           candidates: response.predictions,
-          edible: response.edible,
         })
       })
-      .catch(() => {
+      .catch((error: Error) => {
         dispatch({
-          type: 'classified',
+          type: 'classifyFailed',
           id,
-          candidates: [],
-          edible: null,
+          error: error.message,
         })
       })
-
-    setRetakeId(null)
   }
 
   const recipes = useMutation({
     mutationFn: () =>
       suggestRecipes(
-        confirmedStock(decisions).map(
-          ([ingredient_name, decision]) => ({
-            ingredient_name,
-            instance_count: decision.qty,
-          }),
-        ),
+        confirmedStock(decisions).map((decision) => ({
+          ingredient_name: decision.name,
+          instance_count: Math.max(
+            1,
+            Math.round(decision.qty),
+          ),
+        })),
         recipeOptions,
       ),
-    onSuccess: (data) => {
+    onSuccess: (result) => {
       dispatch({
-        type: 'recipes',
-        recipes: data,
+        type: 'recipesReady',
+        recipes: result,
       })
     },
   })
 
   return (
-    <main className={s.page}>
-      <section className={s.intro}>
-        <p className={s.step}>STEP 2 OF 3</p>
-        <h1>Check what we found</h1>
-        <p>
-          Confirm the ingredients we detected, correct them if needed,
-          and choose your recipe preferences.
+    <main className={s.layout}>
+      <div className={s.intro}>
+        <p className={s.kicker}>Step 2 of 3</p>
+        <h1 className={s.title}>Here&apos;s what we put away.</h1>
+        <p className={s.lead}>
+          Check every item. Say no and we&apos;ll suggest the next
+          guess. Anything you discard won&apos;t be used for recipes.
         </p>
-        <ArrowDown size={28} aria-hidden="true" />
-      </section>
+      </div>
 
-      <Fridge>
-        {shelves.map((shelf, shelfIndex) => (
-          <div className={s.shelf} key={shelfIndex}>
-            {shelf.map((deck) => (
-              <Deck
-                key={deck[0].group}
-                decisions={deck}
-                dispatch={dispatch}
-                onRetake={setRetakeId}
-              />
+      <div className={s.split}>
+        <div className={s.fridge}>
+          <Fridge door={false}>
+            {shelves.map((shelf, shelfIndex) => (
+              <div key={shelfIndex} className={s.shelf}>
+                <ul className={s.grid}>
+                  {shelf.map((cards, cardIndex) => (
+                    <Deck
+                      key={cards[0].group}
+                      cards={cards}
+                      index={
+                        shelfIndex * SHELF_SIZE + cardIndex
+                      }
+                      dispatch={dispatch}
+                      onRetake={setRetakeId}
+                    />
+                  ))}
+                </ul>
+
+                <div className={s.glass} aria-hidden="true" />
+              </div>
             ))}
-          </div>
-        ))}
 
-        <AddIngredient
-          onAdd={(ingredientName) => {
-            dispatch({
-              type: 'add',
-              name: ingredientName,
-            })
-          }}
-        />
-
-        <Door />
-      </Fridge>
-
-      <section className={s.summary}>
-        <p>
-          <strong>{confirmed}</strong> confirmed
-          {' · '}
-          <strong>{rejected}</strong> removed
-          {' · '}
-          <strong>{pending}</strong> left to review
-        </p>
-      </section>
-
-      <section className={s.recipeOptions}>
-        <h2>Recipe preferences</h2>
-
-        <div className={s.optionFields}>
-          <label>
-            Maximum missing ingredients
-            <input
-              type="number"
-              min="0"
-              max="20"
-              value={recipeOptionInputs.max_missing_ingredients}
-              onChange={(event) =>
-                updateRecipeOption(
-                  'max_missing_ingredients',
-                  event.target.value,
-                )}
+            <AddIngredient
+              onAdd={(name, qty, unit) => {
+                dispatch({
+                  type: 'add',
+                  name,
+                  qty,
+                  unit,
+                })
+              }}
             />
-          </label>
-
-          <label>
-            Minimum ingredients used
-            <input
-              type="number"
-              min="1"
-              max="20"
-              value={recipeOptionInputs.min_used_ingredients}
-              onChange={(event) =>
-                updateRecipeOption(
-                  'min_used_ingredients',
-                  event.target.value,
-                )}
-            />
-          </label>
-
-          <label>
-            Number of recipes
-            <input
-              type="number"
-              min="1"
-              max="20"
-              value={recipeOptionInputs.limit}
-              onChange={(event) =>
-                updateRecipeOption(
-                  'limit',
-                  event.target.value,
-                )}
-            />
-          </label>
+          </Fridge>
         </div>
-      </section>
 
-      <section className={s.continue}>
-        <button
-          type="button"
-          disabled={
-            !canContinue
-            || !recipeOptionsAreValid
-            || recipes.isPending
-          }
-          onClick={() => recipes.mutate()}
-        >
-          {recipes.isPending ? 'Finding recipes…' : 'Find recipes'}
-        </button>
+        <Door>
+          <aside aria-label="Summary" className={s.recap}>
+            <h2 className={s.recapTitle}>Summary</h2>
 
-        {classifying > 0 && (
-          <p>
-            Classifying {classifying} image
-            {classifying !== 1 ? 's' : ''}…
-          </p>
-        )}
+            <p className={s.stat}>
+              <span>Confirmed</span>
+              <strong className={s.yes}>{confirmed}</strong>
+            </p>
 
-        {pending > 0 && classifying === 0 && (
-          <p>
-            Review {pending} remaining ingredient
-            {pending !== 1 ? 's' : ''} to continue.
-          </p>
-        )}
+            <p className={s.stat}>
+              <span>Discarded</span>
+              <strong className={s.no}>{discarded}</strong>
+            </p>
 
-        {!recipeOptionsAreValid && (
-          <p>Please enter valid recipe preferences.</p>
-        )}
+            <p className={s.stat}>
+              <span>To check</span>
+              <strong>{pending}</strong>
+            </p>
 
-        {recipes.isError && (
-          <p>Could not retrieve recipes. Please try again.</p>
-        )}
-      </section>
+            <div className={s.recipeOptions}>
+              <h3>Recipe preferences</h3>
+
+              <label>
+                <span>Maximum missing</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="20"
+                  value={
+                    recipeOptionInputs.max_missing_ingredients
+                  }
+                  onChange={(event) => {
+                    updateRecipeOption(
+                      'max_missing_ingredients',
+                      event.target.value,
+                    )
+                  }}
+                />
+              </label>
+
+              <label>
+                <span>Minimum used</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={
+                    recipeOptionInputs.min_used_ingredients
+                  }
+                  onChange={(event) => {
+                    updateRecipeOption(
+                      'min_used_ingredients',
+                      event.target.value,
+                    )
+                  }}
+                />
+              </label>
+
+              <label>
+                <span>Recipe limit</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={recipeOptionInputs.limit}
+                  onChange={(event) => {
+                    updateRecipeOption(
+                      'limit',
+                      event.target.value,
+                    )
+                  }}
+                />
+              </label>
+            </div>
+
+            <div className={s.ctaZone}>
+              <button
+                type="button"
+                className={s.cta}
+                disabled={
+                  !canContinue
+                  || !recipeOptionsAreValid
+                  || recipes.isPending
+                }
+                onClick={() => recipes.mutate()}
+              >
+                {recipes.isPending
+                  ? 'Searching…'
+                  : `See ${recipeOptions.limit} recipe${
+                    recipeOptions.limit !== 1 ? 's' : ''
+                  }`}
+
+                <ArrowDown size={18} />
+              </button>
+
+              {!canContinue && (
+                <p className={s.hint}>
+                  {waiting > 0
+                    ? `Waiting for the model (${waiting})…`
+                    : pending > 0
+                      ? `${pending} item${
+                        pending > 1 ? 's' : ''
+                      } left to check`
+                      : 'Confirm at least one item'}
+                </p>
+              )}
+
+              {!recipeOptionsAreValid && (
+                <p className={s.hint}>
+                  Enter valid recipe preferences.
+                </p>
+              )}
+
+              {recipes.isError && (
+                <p className={s.error}>
+                  {recipes.error.message}
+                </p>
+              )}
+
+              <button
+                type="button"
+                className={s.link}
+                onClick={() => dispatch({ type: 'reset' })}
+              >
+                Change photo
+              </button>
+            </div>
+          </aside>
+        </Door>
+      </div>
 
       <RetakeDialog
         open={retakeId !== null}

@@ -97,8 +97,6 @@ export interface components {
         ClassificationResponse: {
             /** Predictions */
             predictions: components["schemas"]["Prediction"][];
-            /** Edible */
-            edible?: boolean | null;
         };
         /** DetectedIngredient */
         DetectedIngredient: {
@@ -112,8 +110,6 @@ export interface components {
             confidence: number;
             /** Predictions */
             predictions?: components["schemas"]["Prediction"][];
-            /** Edible */
-            edible?: boolean | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {

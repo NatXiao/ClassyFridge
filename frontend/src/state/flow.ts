@@ -49,13 +49,10 @@ export type Decision = {
   candidates: Prediction[]     // model guesses, best first
   attempt: number              // index of the guess currently shown
   exhausted: boolean           // every guess rejected: Select / Retake photo
-  edible?: boolean | null      // mushrooms: false = poisonous, locked to "no"
   classifying?: boolean        // retake photo waiting in the classifier queue
   error?: string
   manual?: boolean
 }
-
-export const isLocked = (d: Decision) => d.edible === false
 
 export type FlowState =
   | { step: 'upload' }
@@ -69,7 +66,7 @@ export type FlowAction =
   | { type: 'confirmAll'; group: string }
   | { type: 'select'; id: string; name: string }
   | { type: 'retake'; id: string; crop: string }
-  | { type: 'classified'; id: string; candidates: Prediction[]; edible?: boolean | null }
+  | { type: 'classified'; id: string; candidates: Prediction[] }
   | { type: 'classifyFailed'; id: string; error: string }
   | { type: 'add'; name: string; qty: number; unit: Unit }
   | { type: 'remove'; id: string }
@@ -110,14 +107,13 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
         id,
         group: item.ingredient_name,
         name: item.ingredient_name,
-        status: item.edible === false ? 'no' : null,
+        status:null,
         qty: 1,
         unit: '',
         crop: item.image_url ?? undefined,
         candidates: (item.predictions ?? []).slice(0, MAX_GUESSES),
         attempt: 0,
         exhausted: false,
-        edible: item.edible ?? null,
       }
     }
     return { step: 'review', analysis: action.analysis, decisions }
@@ -133,12 +129,12 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
   switch (action.type) {
     case 'decide': {
       const d = state.decisions[action.id]
-      if (!d || (isLocked(d) && action.decision.status !== undefined)) return state
+      if (!d) return state
       return put(state, { ...d, ...action.decision })
     }
     case 'reject': {
       const d = state.decisions[action.id]
-      if (!d || isLocked(d) || d.classifying) return state
+      if (!d || d.classifying) return state
       const next = d.attempt + 1
       if (next < d.candidates.length) {
         return put(state, { ...d, name: d.candidates[next].ingredient_name, attempt: next, status: null })
@@ -148,7 +144,7 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
     case 'confirmAll': {
       let next = state
       for (const d of Object.values(state.decisions)) {
-        const untouched = d.status === null && d.attempt === 0 && !d.exhausted && !d.classifying && !isLocked(d)
+        const untouched = d.status === null && d.attempt === 0 && !d.exhausted && !d.classifying
         if (d.group === action.group && untouched) next = put(next, { ...d, status: 'yes' })
       }
       return next
@@ -176,8 +172,7 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
         candidates,
         attempt: 0,
         name: candidates[0].ingredient_name,
-        edible: action.edible ?? null,
-        status: action.edible === false ? 'no' : null,
+        status: null,
       })
     }
     case 'classifyFailed': {
