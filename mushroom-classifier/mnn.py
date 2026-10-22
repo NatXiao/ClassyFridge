@@ -36,26 +36,62 @@ IMG_SIZE = (256, 256)
 MAX_EPOCHS = 50
 LEARNING_RATE = 1e-3
 BATCH_SIZE = 64
+LOSS_WEIGHTS = [1.0, 1.0]
+NUM_WORKER = 4
 
+# Version 1.0
+#
+# Epoch 5
+# Train avg loss: 0.439909
+# Test avg loss  : 0.506447
+# Accuracy  : 77.4%
+# Precision : 0.411
+# Recall    : 0.504
+# F1 score  : 0.453
+#
+# IMG_SIZE = (128, 128)
+# MAX_EPOCHS = 5
+# LEARNING_RATE = 1e-3
+# BATCH_SIZE = 256
+# LOSS_WEIGHTS = [1.0, 1.0]
+# NUM_WORKER = 10
 
+# Version 2.0
+#
+# Epoch 10
+# Train avg loss: 0.377734
+# Test avg loss  : 0.575288
+# Accuracy  : 70.9%
+# Precision : 0.776
+# Recall    : 0.588
+# F1 score  : 0.669
+#
+# IMG_SIZE = (128, 128)
+# MAX_EPOCHS = 10
+# LEARNING_RATE = 1e-3
+# BATCH_SIZE = 256
+# LOSS_WEIGHTS = [1.0, 1.0]
+# NUM_WORKER = 10
 
 IMG_SIZE = (128, 128)
-MAX_EPOCHS = 20
+MAX_EPOCHS = 10
 LEARNING_RATE = 1e-3
-BATCH_SIZE = 64
-LOSS_WEIGHTS= [1.0, 1.0]
+BATCH_SIZE = 256
+LOSS_WEIGHTS = [1.0, 1.0]
+NUM_WORKER = 10
 
 
 
 class MushroomDataset(Dataset):
-    def __init__(self, img_path, metadata_path, img_size=(256, 256)):
+    def __init__(self, img_path, metadata_path, img_size=(256, 256), subset=-1):
 
         self.df = pl.read_csv(metadata_path)
 
-        # gr_1 = self.df.filter(pl.col("poisonous") == 0).head(1500)
-        # gr_2 = self.df.filter(pl.col("poisonous") == 1).head(1500)
+        if subset != -1:
+            gr_1 = self.df.filter(pl.col("poisonous") == 0).head(subset)
+            gr_2 = self.df.filter(pl.col("poisonous") == 1).head(subset)
 
-        # self.df = pl.concat([gr_1, gr_2])
+            self.df = pl.concat([gr_1, gr_2])
 
         self.image_to_tensor = transforms.Compose([
             transforms.Resize(img_size),
@@ -87,28 +123,114 @@ class FridgeNeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.layers = nn.Sequential(
+        # Version 1.0 : Overfit beaucoup moins
+        # self.layers = nn.Sequential(
+        
+        #     nn.Conv2d(3, 32, kernel_size=3, padding=1),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d((2, 2)), # 64x64
 
+        #     nn.Conv2d(32, 64, kernel_size=3, padding=1),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d((2, 2)), # 32x32
+
+        #     nn.Conv2d(64, 128, kernel_size=3, padding=1),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d((2, 2)), # 16x16
+
+        #     nn.Conv2d(128, 256, kernel_size=3, padding=1),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d((2, 2)), # 8x8
+
+        #     nn.Flatten(),
+
+        #     nn.Linear(256 * 8 * 8, 128),  # out_channels * actual_img_size * actual_img_size
+        #     nn.ReLU(),
+        #     nn.Dropout(0.5),
+
+        #     nn.Linear(128, 16),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.5),
+
+        #     nn.Linear(16, 2)
+
+        # )
+
+        # Version 2.0
+        # self.layers = nn.Sequential(
+                
+        #     nn.Conv2d(3, 32, kernel_size=3, padding=1),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d((2, 2)), # 64x64
+
+        #     nn.Conv2d(32, 64, kernel_size=3, padding=1),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d((2, 2)), # 32x32
+
+        #     nn.Conv2d(64, 128, kernel_size=3, padding=1),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d((2, 2)), # 16x16
+
+        #     nn.Conv2d(128, 256, kernel_size=3, padding=1),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d((2, 2)), # 8x8
+
+        #     nn.Conv2d(256, 512, kernel_size=3, padding=1),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d((2, 2)), # 4x4
+
+        #     nn.Flatten(),
+
+        #     nn.Linear(512 * 4 * 4, 128),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.5),
+
+        #     nn.Linear(128, 16),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.5),
+
+        #     nn.Linear(16, 2)
+
+        # )
+
+        self.layers = nn.Sequential(
+                
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.MaxPool2d((2, 2)), # 128x128
+            nn.MaxPool2d((2, 2)), # 64x64
 
-            # nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            # nn.ReLU(),
-            # nn.MaxPool2d((2, 2)), # 64x64
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d((2, 2)), # 32x32
 
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d((2, 2)), # 16x16
+
+            nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d((2, 2)), # 8x8
+
+            nn.Conv2d(256, 512, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d((2, 2)), # 4x4
+
+            nn.AdaptiveAvgPool2d((1, 1)),
             nn.Flatten(),
 
-            nn.Linear(32 * 64 * 64, 1024),  # out_channels * actual_img_size * actual_img_size
+            nn.Linear(512, 256),
             nn.ReLU(),
+            nn.Dropout(0.5),
 
-            # nn.Linear(1024, 64),
-            # nn.ReLU(),
+            nn.Linear(256, 64),
+            nn.ReLU(),
+            nn.Dropout(0.5),
 
-            # nn.Linear(64, 2),
+            nn.Linear(64, 2)
 
-            nn.Linear(1024, 2)
         )
+
+
 
     def forward(self, x):
         return self.layers(x)
@@ -123,7 +245,7 @@ if __name__ == "__main__":
     weights = torch.tensor(LOSS_WEIGHTS).to(device)
     loss_fn = nn.CrossEntropyLoss(weight=weights)
     # loss_fn = nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
 
 
     def train(dataloader, model, loss_fn, optimizer) -> float:
@@ -133,6 +255,7 @@ if __name__ == "__main__":
         train_loss = 0
 
         for batch, (X, y) in enumerate(dataloader):
+            print(f"Loading : {int(batch * 100 / num_batches)}%", end="\r")
             X, y = X.to(device), y.to(device)
 
             pred = model(X)
@@ -149,7 +272,7 @@ if __name__ == "__main__":
             # print(f"loss: {loss:>2f}  [{current:>2d}/{size:>2d}]")
 
         train_loss /= num_batches
-        print(f"Avg loss: {train_loss:>4f}")
+        print(f"Train avg loss: {train_loss:>4f}")
 
         return train_loss
 
@@ -158,32 +281,57 @@ if __name__ == "__main__":
             size = len(dataloader.dataset)
             num_batches = len(dataloader)
             model.eval()
-            test_loss, correct = 0, 0
+            test_loss = 0
+
+            TP, TN, FP, FN = 0, 0, 0, 0
 
             with torch.no_grad():
                 for batch, (X, y) in enumerate(dataloader):
+                    print(f"Loading : {int(batch * 100 / num_batches)}%", end="\r")
                     X, y = X.to(device), y.to(device)
         
                     pred = model(X)
                     loss = loss_fn(pred, y.long())
 
                     test_loss += loss.item()
-                    correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+
+                    pred_class = pred.argmax(1)
+
+                    actual_positive = (y == 1)
+                    actual_negative = (y == 0)
+                    pred_positive = (pred_class == 1)
+                    pred_negative = (pred_class == 0)
+
+                    TP += (pred_positive & actual_positive).type(torch.float).sum().item()
+                    TN += (pred_negative & actual_negative).type(torch.float).sum().item()
+                    FP += (pred_positive & actual_negative).type(torch.float).sum().item()
+                    FN += (pred_negative & actual_positive).type(torch.float).sum().item()
 
             test_loss /= num_batches
-            correct /= size
+            # TP /= size
 
-            print(f"Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+            accuracy = (TP + TN) / (TP + TN + FP + FN)
+            precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
+            recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
+            f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+
+
+            print(f"Test avg loss  : {test_loss:>8f}")
+            print(f"Accuracy  : {(100*accuracy):>0.1f}%")
+            print(f"Precision : {(precision):>0.3f}")
+            print(f"Recall    : {(recall):>0.3f}")
+            print(f"F1 score  : {(f1_score):>0.3f}")
+            print("")
     
             return test_loss
 
         
 
-    train_data = MushroomDataset(img_path="./mushroom-classifier/FungiTastic/FungiTastic-Mini/train/300p/", metadata_path="./mushroom-classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Train.csv", img_size=IMG_SIZE)
-    train_dataloader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
+    train_data = MushroomDataset(img_path="./mushroom-classifier/FungiTastic/FungiTastic-Mini/train/300p/", metadata_path="./mushroom-classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Train_augmented.csv", img_size=IMG_SIZE, subset=-1)
+    train_dataloader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKER)
 
-    test_data = MushroomDataset(img_path="./mushroom-classifier/FungiTastic/FungiTastic-Mini/val/300p/", metadata_path="./mushroom-classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Val.csv", img_size=IMG_SIZE)
-    test_dataloader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=True)
+    test_data = MushroomDataset(img_path="./mushroom-classifier/FungiTastic/FungiTastic-Mini/val/300p/", metadata_path="./mushroom-classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Val.csv", img_size=IMG_SIZE, subset=1700)
+    test_dataloader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKER)
 
     start = time.time()
 
