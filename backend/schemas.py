@@ -25,7 +25,7 @@ class RecipeRequest(BaseModel):
     ingredients: list[IngredientCount] = Field(min_length=1)
 
 
-class RecipeIngredient(BaseModel):  # ajout
+class RecipeIngredient(BaseModel):
     name: str
     amount: float
     unit: str
@@ -37,12 +37,10 @@ class Recipe(BaseModel):
     recipe_id: str
     title: str
     image_url: str | None = None
-    required_ingredients: list[str]
-    available_ingredients: list[str]
-    missing_ingredients: list[str]
+    ingredients: list[RecipeIngredient]
     instructions: list[str]
     preparation_time_minutes: int | None = None
-    servings: int | None = None  # ajout
+    servings: int | None = None
 
 
 class RecipeResponse(BaseModel):

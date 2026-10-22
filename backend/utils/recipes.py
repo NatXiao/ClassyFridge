@@ -73,35 +73,35 @@ def extract_instructions(recipe_details: dict) -> list[str]:
 def build_recipe(
     candidate: dict, recipe_details: dict, instructions: list[str]
 ) -> Recipe:
-    used_ids = {ing.get("id") for ing in candidate.get("usedIngredients", [])}
+    used_ingredients = candidate.get("usedIngredients", [])
+    used_ids = {ing.get("id") for ing in used_ingredients if ing.get("id") is not None}
+    used_names = {
+        ing.get("name", "").strip().lower()
+        for ing in used_ingredients
+        if ing.get("name")
+    }
 
     return Recipe(
         recipe_id=str(recipe_details.get("id", "")),
         title=recipe_details.get("title", ""),
         image_url=recipe_details.get("image") or candidate.get("image"),
-        required_ingredients=[
-            ing.get("original") or ing.get("name", "")
-            for ing in recipe_details.get("extendedIngredients", [])
-        ],
-        available_ingredients=[
-            ing.get("name", "") for ing in candidate.get("usedIngredients", [])
-        ],
-        missing_ingredients=[
-            ing.get("name", "") for ing in candidate.get("missedIngredients", [])
-        ],
-        instructions=instructions,
-        preparation_time_minutes=recipe_details.get("readyInMinutes"),
-        servings=recipe_details.get("servings"),
         ingredients=[
             RecipeIngredient(
                 name=ing.get("name", ""),
                 amount=ing.get("amount") or 0,
                 unit=ing.get("unit", ""),
                 original=ing.get("original", ""),
-                available=ing.get("id") in used_ids,
+                available=(
+                    ing.get("id") in used_ids
+                    if ing.get("id") is not None
+                    else ing.get("name", "").strip().lower() in used_names
+                ),
             )
             for ing in recipe_details.get("extendedIngredients", [])
         ],
+        instructions=instructions,
+        preparation_time_minutes=recipe_details.get("readyInMinutes"),
+        servings=recipe_details.get("servings"),
     )
 
 
