@@ -24,6 +24,9 @@ class AnalysisResponse(BaseModel):
 
 class RecipeRequest(BaseModel):
     ingredients: list[IngredientCount] = Field(min_length=1)
+    max_missing_ingredients: int
+    min_used_ingredients: int
+    limit: int
 
 
 class RecipeIngredient(BaseModel):

@@ -136,6 +136,12 @@ export interface components {
         RecipeRequest: {
             /** Ingredients */
             ingredients: components["schemas"]["IngredientCount"][];
+            /** Max Missing Ingredients */
+            max_missing_ingredients: number;
+            /** Min Used Ingredients */
+            min_used_ingredients: number;
+            /** Limit */
+            limit: number;
         };
         /** RecipeResponse */
         RecipeResponse: {
