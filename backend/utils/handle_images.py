@@ -44,7 +44,8 @@ def resize_image(image, target_size=(IMG_SIZE, IMG_SIZE)):
 
 # encode a NumPy array image into bytes
 def encode_image(image: np.ndarray) -> bytes:
-    success, encoded_image = cv2.imencode(".jpg", image)
+    bgr_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    success, encoded_image = cv2.imencode(".jpg", bgr_image)
 
     if not success:
         raise ValueError("Could not encode image.")

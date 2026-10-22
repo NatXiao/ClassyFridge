@@ -46,6 +46,7 @@ def analyze_image(image: bytes) -> AnalysisResponse:
                 item_id=index,
                 ingredient_name=top["label"],
                 confidence=top["confidence"],
+                image_url=image_to_data_url(crop),
             )
         )
     
