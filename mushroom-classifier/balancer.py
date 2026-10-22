@@ -8,14 +8,6 @@ csv_path = "./mushroom-classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTas
 
 
 df = pl.read_csv(csv_path)
-
-
-
-# eventDate	year	month	day	habitat	countryCode	scientificName	kingdom	phylum	class	order	family	genus	specificEpithet	hasCoordinate	species	iucnRedListCategory	substrate	latitude	longitude	coorUncert	observationID	region	district	filename	category_id	metaSubstrate	poisonous	captions
-
-
-
-
 df_poisonous = df.filter(pl.col("poisonous") == 1)
 
 

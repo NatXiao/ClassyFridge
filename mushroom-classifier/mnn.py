@@ -26,54 +26,11 @@ from torch.utils.data import DataLoader
 
 from PIL import Image
 
-from sklearn.model_selection import train_test_split
-
 device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
 print(f"Using {device} device")
 
 
 # HYPER PARAMETERS
-IMG_SIZE = (256, 256)
-MAX_EPOCHS = 50
-LEARNING_RATE = 1e-3
-BATCH_SIZE = 64
-LOSS_WEIGHTS = [1.0, 1.0]
-NUM_WORKER = 4
-
-# Version 1.0
-#
-# Epoch 5
-# Train avg loss: 0.439909
-# Test avg loss  : 0.506447
-# Accuracy  : 77.4%
-# Precision : 0.411
-# Recall    : 0.504
-# F1 score  : 0.453
-#
-# IMG_SIZE = (128, 128)
-# MAX_EPOCHS = 5
-# LEARNING_RATE = 1e-3
-# BATCH_SIZE = 256
-# LOSS_WEIGHTS = [1.0, 1.0]
-# NUM_WORKER = 10
-
-# Version 2.0
-#
-# Epoch 10
-# Train avg loss: 0.377734
-# Test avg loss  : 0.575288
-# Accuracy  : 70.9%
-# Precision : 0.776
-# Recall    : 0.588
-# F1 score  : 0.669
-#
-# IMG_SIZE = (128, 128)
-# MAX_EPOCHS = 10
-# LEARNING_RATE = 1e-3
-# BATCH_SIZE = 256
-# LOSS_WEIGHTS = [1.0, 1.0]
-# NUM_WORKER = 10
-
 IMG_SIZE = (128, 128)
 MAX_EPOCHS = 15
 LEARNING_RATE = 1e-3
@@ -124,76 +81,6 @@ class FridgeNeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
 
-        # Version 1.0 : Overfit beaucoup moins
-        # self.layers = nn.Sequential(
-        
-        #     nn.Conv2d(3, 32, kernel_size=3, padding=1),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d((2, 2)), # 64x64
-
-        #     nn.Conv2d(32, 64, kernel_size=3, padding=1),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d((2, 2)), # 32x32
-
-        #     nn.Conv2d(64, 128, kernel_size=3, padding=1),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d((2, 2)), # 16x16
-
-        #     nn.Conv2d(128, 256, kernel_size=3, padding=1),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d((2, 2)), # 8x8
-
-        #     nn.Flatten(),
-
-        #     nn.Linear(256 * 8 * 8, 128),  # out_channels * actual_img_size * actual_img_size
-        #     nn.ReLU(),
-        #     nn.Dropout(0.5),
-
-        #     nn.Linear(128, 16),
-        #     nn.ReLU(),
-        #     nn.Dropout(0.5),
-
-        #     nn.Linear(16, 2)
-
-        # )
-
-        # Version 2.0
-        # self.layers = nn.Sequential(
-                
-        #     nn.Conv2d(3, 32, kernel_size=3, padding=1),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d((2, 2)), # 64x64
-
-        #     nn.Conv2d(32, 64, kernel_size=3, padding=1),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d((2, 2)), # 32x32
-
-        #     nn.Conv2d(64, 128, kernel_size=3, padding=1),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d((2, 2)), # 16x16
-
-        #     nn.Conv2d(128, 256, kernel_size=3, padding=1),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d((2, 2)), # 8x8
-
-        #     nn.Conv2d(256, 512, kernel_size=3, padding=1),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d((2, 2)), # 4x4
-
-        #     nn.Flatten(),
-
-        #     nn.Linear(512 * 4 * 4, 128),
-        #     nn.ReLU(),
-        #     nn.Dropout(0.5),
-
-        #     nn.Linear(128, 16),
-        #     nn.ReLU(),
-        #     nn.Dropout(0.5),
-
-        #     nn.Linear(16, 2)
-
-        # )
-
         self.layers = nn.Sequential(
                 
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
@@ -207,14 +94,6 @@ class FridgeNeuralNetwork(nn.Module):
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d((2, 2)), # 16x16
-
-            # nn.Conv2d(128, 256, kernel_size=3, padding=1),
-            # nn.ReLU(),
-            # nn.MaxPool2d((2, 2)), # 8x8
-
-            # nn.Conv2d(256, 512, kernel_size=3, padding=1),
-            # nn.ReLU(),
-            # nn.MaxPool2d((2, 2)), # 4x4
 
             nn.AdaptiveAvgPool2d((1, 1)),
             nn.Flatten(),
