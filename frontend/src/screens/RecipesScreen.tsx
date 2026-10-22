@@ -14,6 +14,7 @@ type Props = {
 
 export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
   const [selected, setSelected] = useState(0)
+  const [failedThumbnailIds, setFailedThumbnailIds] = useState<Set<string>>(new Set())
   const pantry = Object.entries(decisions).filter(([, d]) => d.status === 'yes')
   const recipe = recipes[selected]
 
@@ -51,9 +52,20 @@ export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
               {recipes.map((r, i) => (
                 <button key={r.recipe_id} type="button" className={s.tab}
                   aria-pressed={i === selected} onClick={() => setSelected(i)}>
-                  {r.image_url
-                    ? <img className={s.tabThumb} src={r.image_url} alt="" />
-                    : <span className={s.tabThumb} aria-hidden="true" />}
+                  {r.image_url && !failedThumbnailIds.has(r.recipe_id) && (
+                    <img
+                      className={s.tabThumb}
+                      src={r.image_url}
+                      alt=""
+                      onError={() => {
+                        setFailedThumbnailIds((current) => {
+                          const next = new Set(current)
+                          next.add(r.recipe_id)
+                          return next
+                        })
+                      }}
+                    />
+                  )}
                   <span className={s.tabText}>
                     <span className={s.tabNum}>Recette {i + 1} </span>
                     <span className={s.tabTitle}>{r.title} </span>
