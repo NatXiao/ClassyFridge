@@ -7,7 +7,7 @@ type Props = { label: string; qty: number; unit: Unit; onChange: (qty: number) =
 
 export function QtyInput({ label, qty, unit, onChange, className }: Props) {
   const { short, min, decimals } = UNITS[unit]
-  // brouillon local : permet d'effacer le champ ou de taper "1," sans casser la valeur
+  // A local draft lets the user clear or partially edit the value.
   const [draft, setDraft] = useState<string | null>(null)
 
   const parse = (raw: string) => {
@@ -18,15 +18,15 @@ export function QtyInput({ label, qty, unit, onChange, className }: Props) {
 
   return (
     <div className={className ? `${s.qty} ${className}` : s.qty}>
-      <button type="button" aria-label={`Moins de ${label}`} disabled={qty <= min}
+      <button type="button" aria-label={`Less ${label}`} disabled={qty <= min}
         onClick={() => onChange(stepDown(qty, unit))}><Minus size={18} /></button>
 
       <label className={s.field}>
-        <span className={s.srOnly}>Quantité de {label} en {UNITS[unit].label}</span>
+        <span className={s.srOnly}>Quantity of {label} in {UNITS[unit].label}</span>
         <input
           type="text"
           inputMode={decimals ? 'decimal' : 'numeric'}
-          value={draft !== null ? draft.replace('.', ',') : formatQty(qty)}
+          value={draft !== null ? draft : formatQty(qty)}
           onChange={(e) => {
             const v = parse(e.target.value)
             setDraft(v)
@@ -38,7 +38,7 @@ export function QtyInput({ label, qty, unit, onChange, className }: Props) {
         <span aria-hidden="true">{short}</span>
       </label>
 
-      <button type="button" aria-label={`Plus de ${label}`}
+      <button type="button" aria-label={`More ${label}`}
         onClick={() => onChange(stepUp(qty, unit))}><Plus size={18} /></button>
     </div>
   )

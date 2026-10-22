@@ -22,7 +22,7 @@ export const DEFAULT_RECIPE_OPTIONS: RecipeOptions = {
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
 
-// Upload en multipart : un fetch simple est plus lisible qu'openapi-fetch ici
+// A plain fetch keeps the multipart image upload easy to read.
 export async function analyzeImage(file: File): Promise<Analysis> {
   if (USE_MOCKS) return mockAnalysis()
   const body = new FormData()

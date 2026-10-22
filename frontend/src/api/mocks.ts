@@ -8,10 +8,10 @@ const recipe = (r: RecipeInput): Recipe => {
     image_url: null,
   }
 }
-// Simule la latence réseau, pour voir les états de chargement
+// Simulate network latency so loading states remain visible.
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-// Liste compacte : un aliment et son nombre d'instances détectées
+// Compact list of ingredients and their detected instance counts.
 const DETECTED: [name: string, count: number, confidence: number][] = [
   ['tomato', 3, 0.94],
   ['egg', 6, 0.97],
@@ -21,13 +21,13 @@ const DETECTED: [name: string, count: number, confidence: number][] = [
   ['lemon', 1, 0.9],
   ['zucchini', 2, 0.76],
   ['cheese', 1, 0.7],
-  ['apple', 1, 0.52], // mal détecté exprès, pour tester le bouton "Non"
+  ['apple', 1, 0.52], // Intentionally uncertain to test the rejection flow.
 ]
 
 export async function mockAnalysis(): Promise<Analysis> {
   await delay(1200)
 
-  // Toujours UN item par instance : 3 tomates = 3 items
+  // Always return one item per instance: 3 tomatoes = 3 items.
   let nextId = 0
   const items: Analysis['items'] = DETECTED.flatMap(([name, count, confidence]) =>
     Array.from({ length: count }, () => ({
