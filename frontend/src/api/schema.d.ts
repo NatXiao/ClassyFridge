@@ -73,11 +73,8 @@ export interface components {
         };
         /** DetectedIngredient */
         DetectedIngredient: {
-            /**
-             * Item Id
-             * Format: uuid
-             */
-            item_id: string;
+            /** Item Id */
+            item_id: number;
             /** Ingredient Name */
             ingredient_name: string;
             /** Confidence */
@@ -109,6 +106,8 @@ export interface components {
             recipe_id: string;
             /** Title */
             title: string;
+            /** Image Url */
+            image_url?: string | null;
             /** Required Ingredients */
             required_ingredients: string[];
             /** Available Ingredients */
@@ -119,21 +118,13 @@ export interface components {
             instructions: string[];
             /** Preparation Time Minutes */
             preparation_time_minutes?: number | null;
+            /** Servings */
+            servings?: number | null;
         };
         /** RecipeRequest */
         RecipeRequest: {
             /** Ingredients */
             ingredients: components["schemas"]["IngredientCount"][];
-            /**
-             * Max Missing Ingredients
-             * @default 2
-             */
-            max_missing_ingredients: number;
-            /**
-             * Limit
-             * @default 3
-             */
-            limit: number;
         };
         /** RecipeResponse */
         RecipeResponse: {

@@ -7,6 +7,7 @@ export const api = createClient<paths>({ baseUrl: '/' })
 export type Analysis = components['schemas']['AnalysisResponse']
 export type IngredientCount = components['schemas']['IngredientCount']
 export type Recipe = components['schemas']['Recipe']
+export type RecipeIngredient = components['schemas']['RecipeIngredient']
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
 
@@ -22,9 +23,7 @@ export async function analyzeImage(file: File): Promise<Analysis> {
 
 export async function suggestRecipes(ingredients: IngredientCount[]): Promise<Recipe[]> {
   if (USE_MOCKS) return mockRecipes()
-  const { data, error } = await api.POST('/api/v1/recipes/suggestions', {
-    body: { ingredients, limit: 3, max_missing_ingredients: 2 },
-  })
+  const { data, error } = await api.POST('/api/v1/recipes/suggestions', { body: { ingredients } })
   if (error) throw new Error(String((error as { detail?: string }).detail))
   return data.recipes
 }

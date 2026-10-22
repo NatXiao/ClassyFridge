@@ -1,0 +1,171 @@
+/* ==========================================================================
+   FoodCard — un aliment détecté, posé sur une étagère du frigo
+   Structure : .card > .crop / .row / .qty / .actions
+   ========================================================================== */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  list-style: none;
+  background: #fff;
+  border: 2px solid #E2DCC8;
+  border-radius: 16px;
+}
+
+/* --- Statut de la carte (classe status_yes / status_no / status_null) ---- */
+
+.status_yes {
+  border-color: var(--yes);
+}
+
+.status_no {
+  border: 2px dashed var(--no);
+}
+
+/* Un aliment refusé s'estompe */
+.status_no .crop {
+  opacity: 0.4;
+}
+
+
+/* --------------------------------------------------------------------------
+   Vignette — crop de l'image détectée
+   -------------------------------------------------------------------------- */
+
+.crop {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #F3EEE2;
+  border-radius: 10px;
+}
+
+.crop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Rond beige quand aucun crop n'est disponible */
+.placeholder {
+  width: 50%;
+  height: 50%;
+  background: #D9CDB2;
+  border-radius: 50%;
+}
+
+/* Badge « pas sûr » (confiance < 0.6) en haut à droite */
+.unsure {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #18222B;
+  border-radius: 999px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Ligne nom + statut
+   -------------------------------------------------------------------------- */
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.name {
+  font-weight: 700;
+}
+
+.statusText {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.status_yes .statusText {
+  color: var(--yes);
+}
+
+.status_no .statusText {
+  color: var(--no);
+}
+
+
+/* --------------------------------------------------------------------------
+   Quantité — stepper  −  × n  +
+   -------------------------------------------------------------------------- */
+
+.qty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px;
+  font-weight: 700;
+  background: #F2F5F3;
+  border-radius: 10px;
+}
+
+.qty button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 36px;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Actions Oui / Non — boutons bascule (aria-pressed)
+   -------------------------------------------------------------------------- */
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  font-weight: 700;
+  background: #fff;
+  border-radius: 10px;
+}
+
+/* Contour coloré au repos… */
+.yes {
+  color: var(--yes);
+  border: 2px solid var(--yes);
+}
+
+.no {
+  color: var(--no);
+  border: 2px solid var(--no);
+}
+
+/* …rempli quand le bouton est actif */
+.yes[aria-pressed='true'] {
+  color: #fff;
+  background: var(--yes);
+}
+
+.no[aria-pressed='true'] {
+  color: #fff;
+  background: var(--no);
+}

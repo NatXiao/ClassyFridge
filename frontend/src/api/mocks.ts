@@ -1,5 +1,17 @@
 import type { Analysis, Recipe } from './client'
 
+type RecipeInput = Omit<Recipe, 'required_ingredients' | 'available_ingredients' | 'missing_ingredients' | 'image_url'>
+
+const recipe = (r: RecipeInput): Recipe => {
+  const ings = r.ingredients ?? []
+  return {
+    ...r,
+    image_url: null,
+    required_ingredients: ings.map((i) => i.original),
+    available_ingredients: ings.filter((i) => i.available).map((i) => i.name),
+    missing_ingredients: ings.filter((i) => !i.available).map((i) => i.name),
+  }
+}
 // Simule la latence réseau, pour voir les états de chargement
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -20,9 +32,10 @@ export async function mockAnalysis(): Promise<Analysis> {
   await delay(1200)
 
   // Toujours UN item par instance : 3 tomates = 3 items
+  let nextId = 0
   const items: Analysis['items'] = DETECTED.flatMap(([name, count, confidence]) =>
     Array.from({ length: count }, () => ({
-      item_id: crypto.randomUUID(),
+      item_id: nextId++,
       ingredient_name: name,
       confidence,
     })),
@@ -33,6 +46,7 @@ export async function mockAnalysis(): Promise<Analysis> {
     ingredients: DETECTED.map(([ingredient_name, instance_count]) => ({
       ingredient_name,
       instance_count,
+      unit: '' as const,
     })),
   }
 }
@@ -40,46 +54,59 @@ export async function mockAnalysis(): Promise<Analysis> {
 export async function mockRecipes(): Promise<Recipe[]> {
   await delay(800)
   return [
-    {
+    recipe({
       recipe_id: 'mock-1',
       title: 'Shakshuka express',
-      required_ingredients: ['tomato', 'egg', 'bell pepper', 'onion', 'olive oil', 'cumin'],
-      available_ingredients: ['tomato', 'egg', 'bell pepper', 'onion'],
-      missing_ingredients: ['olive oil', 'cumin'],
-      instructions: [
-        "Émince l'oignon et le poivron, fais-les revenir 5 min.",
-        'Ajoute les tomates en dés et le cumin, laisse compoter 10 min.',
-        'Creuse 4 puits et casse un œuf dans chacun.',
-        'Couvre et cuis 5 à 7 min.',
-      ],
+      servings: 2,
       preparation_time_minutes: 25,
-    },
-    {
+      ingredients: [
+        { name: 'tomato', amount: 3, unit: '', original: '3 tomatoes, diced', available: true },
+        { name: 'egg', amount: 4, unit: '', original: '4 eggs', available: true },
+        { name: 'bell pepper', amount: 1, unit: '', original: '1 red bell pepper', available: true },
+        { name: 'onion', amount: 1, unit: '', original: '1 onion', available: true },
+        { name: 'olive oil', amount: 1, unit: 'tbsp', original: '1 tbsp olive oil', available: false },
+        { name: 'cumin', amount: 1, unit: 'tsp', original: '1 tsp ground cumin', available: false },
+      ],
+      instructions: [
+        'Slice the onion and pepper, cook for 5 minutes in olive oil.',
+        'Add the diced tomatoes and cumin, simmer for 10 minutes.',
+        'Make 4 wells and crack an egg into each.',
+        'Cover and cook 5 to 7 minutes until the whites are set.',
+      ],
+    }),
+    recipe({
       recipe_id: 'mock-2',
-      title: 'Omelette courgette-fromage',
-      required_ingredients: ['egg', 'zucchini', 'cheese', 'onion', 'butter'],
-      available_ingredients: ['egg', 'zucchini', 'cheese', 'onion'],
-      missing_ingredients: ['butter'],
-      instructions: [
-        'Râpe la courgette et presse-la pour retirer l\u2019eau.',
-        'Fais revenir l\u2019oignon puis la courgette dans le beurre.',
-        'Verse les œufs battus, parsème de fromage, plie l\u2019omelette.',
-      ],
+      title: 'Zucchini & Cheese Omelette',
+      servings: 1,
       preparation_time_minutes: 15,
-    },
-    {
-      recipe_id: 'mock-3',
-      title: 'Carottes rôties au citron',
-      required_ingredients: ['carrot', 'onion', 'lemon', 'olive oil', 'honey'],
-      available_ingredients: ['carrot', 'onion', 'lemon'],
-      missing_ingredients: ['olive oil', 'honey'],
-      instructions: [
-        'Préchauffe le four à 200 °C.',
-        'Coupe les carottes en bâtonnets, l\u2019oignon en quartiers.',
-        'Mélange avec huile et miel, enfourne 25 min.',
-        'Arrose de jus de citron à la sortie.',
+      ingredients: [
+        { name: 'egg', amount: 3, unit: '', original: '3 eggs', available: true },
+        { name: 'zucchini', amount: 1, unit: '', original: '1 small zucchini, grated', available: true },
+        { name: 'cheese', amount: 40, unit: 'g', original: '40 g grated cheese', available: true },
+        { name: 'butter', amount: 10, unit: 'g', original: '10 g butter', available: false },
       ],
+      instructions: [
+        'Grate the zucchini and squeeze out the water.',
+        'Cook it in butter for 3 minutes.',
+        'Pour in the beaten eggs, sprinkle with cheese and fold.',
+      ],
+    }),
+    recipe({
+      recipe_id: 'mock-3',
+      title: 'Lemon Roasted Carrots',
+      servings: 4,
       preparation_time_minutes: 35,
-    },
+      ingredients: [
+        { name: 'carrot', amount: 6, unit: '', original: '6 carrots, cut into sticks', available: true },
+        { name: 'onion', amount: 1, unit: '', original: '1 onion, quartered', available: true },
+        { name: 'lemon', amount: 0.5, unit: '', original: '1/2 lemon, juiced', available: true },
+        { name: 'honey', amount: 1, unit: 'tbsp', original: '1 tbsp honey', available: false },
+      ],
+      instructions: [
+        'Preheat the oven to 200 °C.',
+        'Toss the vegetables with honey and oil, roast 25 minutes.',
+        'Drizzle with lemon juice before serving.',
+      ],
+    }),
   ]
 }

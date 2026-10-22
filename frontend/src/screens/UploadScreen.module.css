@@ -1,0 +1,121 @@
+/* ==========================================================================
+   UploadScreen — étape 1 : texte d'accroche à gauche, frigo-dropzone à droite
+   ========================================================================== */
+
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 56px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px 24px 72px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Accroche
+   -------------------------------------------------------------------------- */
+
+.intro {
+  display: flex;
+  flex: 1 1 380px;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* « Étape 1 sur 3 » */
+.kicker {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #B23A20;
+}
+
+.title {
+  font-size: clamp(40px, 6vw, 68px);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -2px;
+}
+
+.lead {
+  max-width: 480px;
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.55;
+  color: #3E4B55;
+}
+
+
+/* --------------------------------------------------------------------------
+   Frigo + zone de dépôt
+   -------------------------------------------------------------------------- */
+
+/* padding-right : laisse la place à la porte qui s'ouvre vers la droite */
+.fridge {
+  flex: 1 1 480px;
+  max-width: 640px;
+  padding-right: 110px;
+  box-sizing: border-box;
+}
+
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 360px;
+  padding: 32px 24px;
+  text-align: center;
+  background: #FFF6EE;
+  border: 2.5px dashed var(--accent);
+  border-radius: 18px;
+  transition: background 0.15s;
+}
+
+/* Fichier en cours de survol */
+.dragging {
+  background: #FFE6D6;
+}
+
+/* Rond orange avec l'icône appareil photo */
+.icon {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.dropTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* « Choisir une photo » — même pilule pleine que les boutons primaires */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #fff;
+  background: var(--ink);
+  border: 0;
+  border-radius: 999px;
+}
+
+.error {
+  margin: 0;
+  font-weight: 600;
+  color: var(--no);
+}

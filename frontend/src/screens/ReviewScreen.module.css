@@ -1,0 +1,189 @@
+/* ==========================================================================
+   ReviewScreen — étape 2 : frigo ouvert (étagères de FoodCard) + porte récap
+   ========================================================================== */
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 24px 72px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Accroche
+   -------------------------------------------------------------------------- */
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 720px;
+}
+
+/* « Étape 2 sur 3 » */
+.kicker {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #B23A20;
+}
+
+.title {
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1.5px;
+}
+
+.lead {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #3E4B55;
+}
+
+
+/* --------------------------------------------------------------------------
+   Split — frigo à gauche, porte (<Door>) à droite ; passe en colonne si étroit
+   -------------------------------------------------------------------------- */
+
+.split {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 14px;
+}
+
+/* flex-grow 999 : le frigo prend toute la place restante à côté de la porte */
+.fridge {
+  flex: 999 1 680px;
+  min-width: 0;
+}
+
+/* --- Étagères ------------------------------------------------------------ */
+
+.shelf {
+  margin-bottom: 28px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0 6px;
+}
+
+/* Plaque de verre sous chaque rangée */
+.glass {
+  height: 12px;
+  margin-top: 14px;
+  background: #D4E4E9;
+  border-bottom: 3px solid #A9C3CB;
+  border-radius: 6px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Récap — contenu de la porte
+   -------------------------------------------------------------------------- */
+
+/* Remplit toute la hauteur de la porte pour que .ctaZone se cale en bas */
+.recap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+}
+
+.recapTitle {
+  font-size: 24px;
+}
+
+/* Une ligne de compteur, façon bac de porte */
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  padding: 14px 16px;
+  font-weight: 600;
+  background: #fff;
+  border-bottom: 6px solid var(--fridge-border);
+  border-radius: 12px;
+}
+
+.stat strong {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--muted);
+}
+
+.stat .yes {
+  color: var(--yes);
+}
+
+.stat .no {
+  color: var(--no);
+}
+
+/* --- Zone d'action, poussée en bas de la porte --------------------------- */
+
+.ctaZone {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+/* « Voir les 3 recettes » */
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: 0;
+  border-radius: 999px;
+}
+
+.cta:disabled {
+  color: #3E4B55;
+  background: #D3DCD9;
+  cursor: not-allowed;
+}
+
+/* Explique pourquoi le CTA est désactivé */
+.hint {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+  color: #3E4B55;
+}
+
+.error {
+  margin: 0;
+  font-weight: 600;
+  text-align: center;
+  color: var(--no);
+}
+
+/* « Changer de photo » */
+.link {
+  padding: 10px;
+  font-weight: 600;
+  color: #B23A20;
+  text-decoration: underline;
+  background: none;
+  border: 0;
+}
+

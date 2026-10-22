@@ -1,0 +1,60 @@
+/* ==========================================================================
+   Door — porte de frigo autonome, posée à droite du Fridge (écran Review)
+   Pivote sur son bord gauche : on voit d'abord l'extérieur, puis elle
+   s'ouvre (rotateY -180° → 0°) et révèle son contenu côté intérieur.
+   ========================================================================== */
+
+/* Zone de charnière : porte la perspective de la rotation */
+.hingeArea {
+  display: flex;
+  flex: 0 1 340px;
+  min-width: 260px;
+  perspective: 2400px;
+}
+
+.door {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+
+
+/* --------------------------------------------------------------------------
+   Faces — superposées, backface-visibility cache celle de dos
+   -------------------------------------------------------------------------- */
+
+.inside,
+.outside {
+  box-sizing: border-box;
+  background: #F2F5F3;
+  border: 2px solid var(--fridge-border);
+  border-radius: 30px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Face intérieure : reçoit les children (le récap) */
+.inside {
+  height: 100%;
+  padding: 28px 22px;
+}
+
+/* Face extérieure : retournée, simple poignée */
+.outside {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  transform: rotateY(180deg);
+}
+
+/* Même poignée que dans Fridge.module.css */
+.handle {
+  width: 8px;
+  height: 44px;
+  background: #AEBCB8;
+  border-radius: 4px;
+}
