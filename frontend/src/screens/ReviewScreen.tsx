@@ -7,6 +7,7 @@ import { label, cropSrc } from '../api/labels'
 import type { Decision, FlowAction } from '../state/flow'
 import { Fridge } from '../components/Fridge'
 import { FoodCard } from '../components/FoodCard'
+import { AddIngredient } from '../components/AddIngredient'
 import s from './ReviewScreen.module.css'
 
 type Props = {
@@ -18,15 +19,21 @@ type Props = {
 const SHELF_SIZE = 4
 
 export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
-  // Une carte par ingrédient, avec le crop de sa première instance
-  const cards = analysis.ingredients.map((ing) => {
+    // Une carte par ingrédient détecté, avec le crop de sa première instance
+  const detected = analysis.ingredients.map((ing) => {
     const items = analysis.items.filter((i) => i.ingredient_name === ing.ingredient_name)
     return {
       name: ing.ingredient_name,
       crop: cropSrc(items[0]),
       unsure: Math.min(...items.map((i) => i.confidence)) < 0.6,
+      manual: false,
     }
   })
+  // Puis les aliments ajoutés à la main, dans l'ordre d'ajout
+  const added = Object.entries(decisions)
+    .filter(([, d]) => d.manual)
+    .map(([name]) => ({ name, crop: undefined, unsure: false, manual: true }))
+  const cards = [...detected, ...added]
   const shelves = Array.from({ length: Math.ceil(cards.length / SHELF_SIZE) }, (_, i) =>
     cards.slice(i * SHELF_SIZE, (i + 1) * SHELF_SIZE),
   )
@@ -42,7 +49,7 @@ export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
       suggestRecipes(
         Object.entries(decisions)
           .filter(([, d]) => d.status === 'yes')
-          .map(([ingredient_name, d]) => ({ ingredient_name, instance_count: d.qty })),
+          .map(([ingredient_name, d]) => ({ ingredient_name, instance_count: Math.max(1, Math.round(d.qty)) })),
       ),
     onSuccess: (result) => dispatch({ type: 'recipesReady', recipes: result }),
   })
@@ -70,12 +77,15 @@ export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
                       decision={decisions[c.name]}
                       index={si * SHELF_SIZE + ci}
                       onDecide={(d) => dispatch({ type: 'decide', name: c.name, decision: d })}
+                      manual={c.manual}
+                      onRemove={() => dispatch({ type: 'remove', name: c.name })}
                     />
                   ))}
                 </ul>
                 <div className={s.glass} aria-hidden="true" />
               </div>
             ))}
+            <AddIngredient onAdd={(name, qty, unit) => dispatch({ type: 'add', name, qty, unit })} />
           </Fridge>
         </div>
 

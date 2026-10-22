@@ -1,0 +1,67 @@
+/* Stepper  −  [ 53 ] g  +  — même look que l'ancien bloc .qty de FoodCard */
+.qty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 2px;
+  font-weight: 700;
+  background: #F2F5F3;
+  border-radius: 10px;
+}
+
+.qty button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 36px;
+  padding: 0;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+}
+
+.qty button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.field input {
+  width: 5ch;
+  min-width: 0;
+  padding: 4px 2px;
+  font: inherit;
+  text-align: right;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+}
+
+.field input:focus {
+  background: #fff;
+  outline: 2px solid var(--ink);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Carte étroite : boutons plus petits */
+@container card (max-width: 160px) {
+  .qty button { width: 30px; }
+}

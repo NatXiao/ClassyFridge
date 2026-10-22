@@ -1,0 +1,104 @@
+/* Formulaire d'ajout manuel, posé sous la dernière étagère comme un bac */
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+  padding: 18px;
+  background: #EEF3F1;
+  border: 2px solid #D3DDDA;
+  border-radius: 14px;
+}
+
+.title {
+  flex-basis: 100%;
+  font-size: 18px;
+}
+
+.field,
+.small { flex: 0 1 150px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+
+/* --- Liste de suggestions, toujours sous le champ --------------------------- */
+
+.combo {
+  position: relative;
+}
+
+.combo input {
+  width: 100%;
+}
+
+.listbox {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 264px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  background: #fff;
+  border: 2px solid #C3CFCB;
+  border-radius: 10px;
+  box-shadow: 0 12px 24px -12px rgb(24 34 43 / 0.35);
+}
+
+.option,
+.optionActive {
+  padding: 10px 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.optionActive {
+  background: #EEF3F1;
+}
+
+.field { flex: 1 1 220px; }
+.small { flex: 0 1 120px; }
+
+/* Le stepper − / + a besoin de plus de place qu'un select */
+.qtyField { flex: 0 1 170px; }
+
+/* Cadre du compteur : même bordure que le champ et le select à côté */
+.qtyBox {
+  box-sizing: border-box;
+  min-height: 44px;
+  background: #fff;
+  border: 2px solid #C3CFCB;
+}
+
+.qtyBox:focus-within {
+  border-color: var(--ink);
+}
+
+.combo input,
+.form select {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 12px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid #C3CFCB;
+  border-radius: 10px;
+}
+
+.add {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ink);
+  border: 0;
+  border-radius: 999px;
+}
