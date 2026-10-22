@@ -20,3 +20,6 @@ __pycache__/
 
 data/
 training_data/
+
+# macOS files
+.DS_Store
