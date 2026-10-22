@@ -38,10 +38,36 @@
 }
 
 .title {
+  margin: 0;
   font-size: clamp(28px, 4vw, 44px);
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -1px;
+}
+
+.titleWithLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sourceLink {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  color: var(--ink);
+  background: #F2EBDC;
+  border-radius: 50%;
+  transition: color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.sourceLink:hover {
+  color: #fff;
+  background: var(--accent);
+  transform: translateY(-1px);
 }
 
 .meta {

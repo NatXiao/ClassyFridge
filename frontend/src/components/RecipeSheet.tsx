@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Plus, Minus, Clock, Users, AlertTriangle } from 'lucide-react'
+import { Check, Plus, Minus, Clock, Users, AlertTriangle, ExternalLink } from 'lucide-react'
 import type { Recipe } from '../api/client'
 import { label } from '../api/labels'
 import { formatAmount, toBase } from '../api/format'
@@ -35,7 +35,21 @@ export function RecipeSheet({ recipe, decisions }: Props) {
               onError={(event) => { event.currentTarget.hidden = true }}
             />
           )}
-          <h2 className={s.title}>{recipe.title}</h2>
+          <div className={s.titleWithLink}>
+            <h2 className={s.title}>{recipe.title}</h2>
+            {recipe.source_url && (
+              <a
+                className={s.sourceLink}
+                href={recipe.source_url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Open the original recipe for ${recipe.title}`}
+                title="Open original recipe"
+              >
+                <ExternalLink size={20} />
+              </a>
+            )}
+          </div>
         </div>
         <div className={s.meta}>
           {recipe.preparation_time_minutes && (
