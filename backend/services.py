@@ -4,8 +4,6 @@ Connect the real implementations in this file. Keeping these calls outside the
 routes prevents the HTTP layer from depending on a specific model or API.
 """
 
-import random
-
 from backend.schemas import (
     AnalysisResponse,
     DetectedIngredient,
@@ -31,7 +29,7 @@ def analyze_image(
 
     # segment and crop the images into a list of cropped images
     result, cropped_images = segment_and_crop(
-        decoded_image, img_size=1024, confidence=0.7, iou=0.5
+        decoded_image, img_size=1024, confidence=0.8, iou=0.5
     )
 
     # should never happen, TODO see what we do if this happens
@@ -45,25 +43,24 @@ def analyze_image(
 
     # test with only the segmentation and cropping step for now
     # assume all cropped images are mushrooms
-    test_ingredient_names = ['carrot', 'potato', 'tomato', 'onion', 'garlic', 'pepper', 'mushroom'] 
     detected_ingredients = [
         DetectedIngredient(
             item_id=index,
-            ingredient_name=random.choice(test_ingredient_names),
+            ingredient_name="mushroom",
             confidence=0.9,
         )
         for index in range(len(cropped_images))
     ]
 
-    ingredient_counts = {}
-    for ingredient in detected_ingredients:
-        ingredient_name = ingredient.ingredient_name
-        ingredient_counts[ingredient_name] = ingredient_counts.get(ingredient_name, 0) + 1
+    ingredient_count = IngredientCount(
+        ingredient_name="mushroom",
+        instance_count=len(cropped_images),
+    )
 
     # response  
     analysis_response = AnalysisResponse(
         items=detected_ingredients,
-        ingredients=[IngredientCount(ingredient_name=name, instance_count=count) for name, count in ingredient_counts.items()],
+        ingredients=[ingredient_count],
     )
 
     return analysis_response
