@@ -33,22 +33,39 @@ def test_build_recipe_includes_image_and_candidate_ingredients() -> None:
     recipe = recipes.build_recipe(
         candidate={
             "image": "https://example.com/search-image.jpg",
-            "usedIngredients": [{"name": "mushroom"}],
-            "missedIngredients": [{"name": "onion"}],
+            "usedIngredients": [{"id": 1, "name": "mushroom"}],
+            "missedIngredients": [{"id": 2, "name": "onion"}],
         },
         recipe_details={
             "id": 42,
             "title": "Mushroom soup",
             "image": "https://example.com/recipe-image.jpg",
             "extendedIngredients": [
-                {"name": "mushroom", "original": "200 g mushrooms"}
+                {
+                    "id": 1,
+                    "name": "mushroom",
+                    "amount": 200,
+                    "unit": "g",
+                    "original": "200 g mushrooms",
+                },
+                {
+                    "id": 2,
+                    "name": "onion",
+                    "amount": 1,
+                    "unit": "",
+                    "original": "1 onion",
+                },
             ],
             "readyInMinutes": 30,
+            "servings": 2,
         },
         instructions=["Cook the mushrooms."],
     )
 
     assert recipe.image_url == "https://example.com/recipe-image.jpg"
-    assert recipe.available_ingredients == ["mushroom"]
-    assert recipe.missing_ingredients == ["onion"]
-    assert recipe.required_ingredients == ["200 g mushrooms"]
+    assert recipe.servings == 2
+    assert [ingredient.name for ingredient in recipe.ingredients] == [
+        "mushroom",
+        "onion",
+    ]
+    assert [ingredient.available for ingredient in recipe.ingredients] == [True, False]
