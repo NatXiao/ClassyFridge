@@ -12,8 +12,8 @@ function App() {
     <>
       <Header step={state.step} />
       {state.step === 'upload' && <UploadScreen dispatch={dispatch} />}
-      {state.step === 'review' && <div>Écran 2</div>}
-      {state.step === 'recipes' && <div>Écran 3</div>}
+      {state.step === 'review'}
+      {state.step === 'recipes'}
       {state.step === 'review' && (
         <ReviewScreen analysis={state.analysis} decisions={state.decisions} dispatch={dispatch} />
       )}

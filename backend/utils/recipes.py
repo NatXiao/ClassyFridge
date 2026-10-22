@@ -3,7 +3,7 @@ import os
 import requests
 from dotenv import load_dotenv
 
-from backend.schemas import Recipe
+from backend.schemas import Recipe, RecipeIngredient
 
 BASE_URL = "https://api.spoonacular.com"
 NB_OF_RECIPES = 20
@@ -73,6 +73,8 @@ def extract_instructions(recipe_details: dict) -> list[str]:
 def build_recipe(
     candidate: dict, recipe_details: dict, instructions: list[str]
 ) -> Recipe:
+    used_ids = {ing.get("id") for ing in candidate.get("usedIngredients", [])}
+
     return Recipe(
         recipe_id=str(recipe_details.get("id", "")),
         title=recipe_details.get("title", ""),
@@ -89,7 +91,19 @@ def build_recipe(
         ],
         instructions=instructions,
         preparation_time_minutes=recipe_details.get("readyInMinutes"),
+        servings=recipe_details.get("servings"),
+        ingredients=[
+            RecipeIngredient(
+                name=ing.get("name", ""),
+                amount=ing.get("amount") or 0,
+                unit=ing.get("unit", ""),
+                original=ing.get("original", ""),
+                available=ing.get("id") in used_ids,
+            )
+            for ing in recipe_details.get("extendedIngredients", [])
+        ],
     )
+
 
 # complete function to get recipe suggestions
 def get_recipe_suggestions(
