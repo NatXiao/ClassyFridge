@@ -9,6 +9,7 @@ uv run ./mushroom-classifier/mnn.py
 """
 
 
+import copy
 import os
 import time
 
@@ -74,7 +75,7 @@ NUM_WORKER = 4
 # NUM_WORKER = 10
 
 IMG_SIZE = (128, 128)
-MAX_EPOCHS = 10
+MAX_EPOCHS = 15
 LEARNING_RATE = 1e-3
 BATCH_SIZE = 256
 LOSS_WEIGHTS = [1.0, 1.0]
@@ -207,18 +208,18 @@ class FridgeNeuralNetwork(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d((2, 2)), # 16x16
 
-            nn.Conv2d(128, 256, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d((2, 2)), # 8x8
+            # nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            # nn.ReLU(),
+            # nn.MaxPool2d((2, 2)), # 8x8
 
-            nn.Conv2d(256, 512, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d((2, 2)), # 4x4
+            # nn.Conv2d(256, 512, kernel_size=3, padding=1),
+            # nn.ReLU(),
+            # nn.MaxPool2d((2, 2)), # 4x4
 
             nn.AdaptiveAvgPool2d((1, 1)),
             nn.Flatten(),
 
-            nn.Linear(512, 256),
+            nn.Linear(128, 256),
             nn.ReLU(),
             nn.Dropout(0.5),
 
@@ -238,8 +239,13 @@ class FridgeNeuralNetwork(nn.Module):
 
 if __name__ == "__main__":
 
+    logs = []
+
     model = FridgeNeuralNetwork().to(device)
     print(model)
+
+    logs.append(model)
+    logs.append("\n\n")
 
 
     weights = torch.tensor(LOSS_WEIGHTS).to(device)
@@ -247,6 +253,12 @@ if __name__ == "__main__":
     # loss_fn = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
 
+    best_test_loss = None
+    best_model = None
+    best_epoch = None
+
+    logs.append(optimizer)
+    logs.append("\n\n")
 
     def train(dataloader, model, loss_fn, optimizer) -> float:
         size = len(dataloader.dataset)
@@ -273,6 +285,8 @@ if __name__ == "__main__":
 
         train_loss /= num_batches
         print(f"Train avg loss: {train_loss:>4f}")
+        logs.append(f"Train avg loss: {train_loss:>4f}")
+        logs.append("\n")
 
         return train_loss
 
@@ -322,6 +336,17 @@ if __name__ == "__main__":
             print(f"Recall    : {(recall):>0.3f}")
             print(f"F1 score  : {(f1_score):>0.3f}")
             print("")
+
+            logs.append(f"Test avg loss  : {test_loss:>8f}")
+            logs.append("\n")
+            logs.append(f"Accuracy  : {(100*accuracy):>0.1f}%")
+            logs.append("\n")
+            logs.append(f"Precision : {(precision):>0.3f}")
+            logs.append("\n")
+            logs.append(f"Recall    : {(recall):>0.3f}")
+            logs.append("\n")
+            logs.append(f"F1 score  : {(f1_score):>0.3f}")
+            logs.append("\n\n")
     
             return test_loss
 
@@ -340,20 +365,40 @@ if __name__ == "__main__":
     epochs = []
     for t in range(MAX_EPOCHS):
         print(f"Epoch {t+1}")
+        logs.append(f"Epoch {t+1}")
+        logs.append("\n")
+
         loss_train.append(train(train_dataloader, model, loss_fn, optimizer))
-        loss_test.append(test(test_dataloader, model, loss_fn, optimizer))
+
+        loss = test(test_dataloader, model, loss_fn, optimizer)
+        loss_test.append(loss)
+
+        if best_test_loss == None or loss < best_test_loss:
+            best_test_loss = loss
+            best_model = copy.deepcopy(model)
+            best_epoch = t
+
         epochs.append(t)
 
     end = time.time()
     print(f"Elapsed time : {end-start} s")
+    logs.append(f"Elapsed time : {end-start} s")
+    logs.append("\n\n")
 
     if not os.path.exists("./mushroom-classifier/result"):
         os.makedirs("./mushroom-classifier/result")
 
-    torch.save(model.state_dict(), "./mushroom-classifier/result/mushroom.pth")
+    logs.append(f"Best Epoch : {best_epoch}\n")
+    logs.append(f"Best loss  : {best_test_loss}\n")
+
+    torch.save(best_model.state_dict(), "./mushroom-classifier/result/mushroom.pth")
 
     plt.plot(epochs, loss_train, label="Train")
     plt.plot(epochs, loss_test, label="Test")
     plt.legend()
     plt.savefig('./mushroom-classifier/result/loss.png')
+
+    with open("./mushroom-classifier/result/logs.txt", "w") as f:
+        for l in logs:
+            f.write(str(l))
 
