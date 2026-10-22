@@ -9,8 +9,8 @@ const FR: Record<string, string> = {
 export const label = (name: string) =>
   FR[name] ?? name.charAt(0).toUpperCase() + name.slice(1)
 
-// Le champ n'existe pas encore dans le schéma : on le lit sans casser le typage
-export function cropSrc(item: Analysis['items'][number] | undefined) {
-  const b64 = (item as { crop_base64?: string } | undefined)?.crop_base64
-  return b64 ? `data:image/jpeg;base64,${b64}` : undefined
+export function cropSrc(
+  item: Analysis['items'][number] | undefined,
+): string | undefined {
+  return item?.image_url ?? undefined
 }
