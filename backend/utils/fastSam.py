@@ -6,7 +6,7 @@ from ultralytics import FastSAM
 
 from backend.utils.handle_images import resize_image
 
-DEBUGGING = True
+DEBUGGING = False
 MODELS_PATH = "models"
 IMG_SIZE = 224
 DEBUGGING_DIR = "debugging_images"
@@ -105,6 +105,9 @@ def segment_and_crop(image, img_size, confidence, iou):
         return result, []
 
     cropped_images = crop_boxes(image, result.boxes)
+    if DEBUGGING:
+        for i, cropped_image in enumerate(cropped_images):
+            cv2.imwrite(f"{DEBUGGING_DIR}/cropped_image_{i + 1}.jpg", cropped_image)
 
     return result, cropped_images
 

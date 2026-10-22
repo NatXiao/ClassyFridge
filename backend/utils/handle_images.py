@@ -15,7 +15,8 @@ def decode_image(image_bytes: bytes) -> np.ndarray:
     if image is None:
         raise ValueError("Could not decode the uploaded image.")
 
-    return image
+    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
 
 
 # resize an image to a target size while maintaining aspect ratio
