@@ -1,10 +1,10 @@
 
 """
 Download data :
-uv run ./mushroom-classifier/download.py --metadata --images --subset "m" --size "300" --save_path "./mushroom-classifier/"
+uv run ./mushroom_classifier/download.py --metadata --images --subset "m" --size "300" --save_path "./mushroom_classifier/"
 
 Run script :
-uv run ./mushroom-classifier/mnn.py
+uv run ./mushroom_classifier/mnn.py
 
 """
 
@@ -39,9 +39,17 @@ LOSS_WEIGHTS = [1.0, 1.0]
 NUM_WORKER = 10
 
 
+image_to_tensor = transforms.Compose([
+    transforms.Resize(IMG_SIZE),
+    transforms.ToTensor()
+])
+
+def transform_image(image):
+    return transform_image(image)
+
 
 class MushroomDataset(Dataset):
-    def __init__(self, img_path, metadata_path, img_size=(256, 256), subset=-1):
+    def __init__(self, img_path, metadata_path, subset=-1):
 
         self.df = pl.read_csv(metadata_path)
 
@@ -51,10 +59,7 @@ class MushroomDataset(Dataset):
 
             self.df = pl.concat([gr_1, gr_2])
 
-        self.image_to_tensor = transforms.Compose([
-            transforms.Resize(img_size),
-            transforms.ToTensor()
-        ])
+        self.image_to_tensor = image_to_tensor
 
         self.img_path = img_path
         
@@ -77,7 +82,7 @@ class MushroomDataset(Dataset):
 
 
 # Define model
-class FridgeNeuralNetwork(nn.Module):
+class MushroomNeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -110,8 +115,6 @@ class FridgeNeuralNetwork(nn.Module):
 
         )
 
-
-
     def forward(self, x):
         return self.layers(x)
 
@@ -120,7 +123,7 @@ if __name__ == "__main__":
 
     logs = []
 
-    model = FridgeNeuralNetwork().to(device)
+    model = MushroomNeuralNetwork().to(device)
     print(model)
 
     logs.append(model)
@@ -231,10 +234,10 @@ if __name__ == "__main__":
 
         
 
-    train_data = MushroomDataset(img_path="./mushroom-classifier/FungiTastic/FungiTastic-Mini/train/300p/", metadata_path="./mushroom-classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Train_augmented.csv", img_size=IMG_SIZE, subset=-1)
+    train_data = MushroomDataset(img_path="./mushroom_classifier/FungiTastic/FungiTastic-Mini/train/300p/", metadata_path="./mushroom_classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Train_augmented.csv", subset=-1)
     train_dataloader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKER)
 
-    test_data = MushroomDataset(img_path="./mushroom-classifier/FungiTastic/FungiTastic-Mini/val/300p/", metadata_path="./mushroom-classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Val.csv", img_size=IMG_SIZE, subset=1700)
+    test_data = MushroomDataset(img_path="./mushroom_classifier/FungiTastic/FungiTastic-Mini/val/300p/", metadata_path="./mushroom_classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Val.csv", subset=1700)
     test_dataloader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKER)
 
     start = time.time()
@@ -264,20 +267,20 @@ if __name__ == "__main__":
     logs.append(f"Elapsed time : {end-start} s")
     logs.append("\n\n")
 
-    if not os.path.exists("./mushroom-classifier/result"):
-        os.makedirs("./mushroom-classifier/result")
+    if not os.path.exists("./mushroom_classifier/result"):
+        os.makedirs("./mushroom_classifier/result")
 
     logs.append(f"Best Epoch : {best_epoch}\n")
     logs.append(f"Best loss  : {best_test_loss}\n")
 
-    torch.save(best_model.state_dict(), "./mushroom-classifier/result/mushroom.pth")
+    torch.save(best_model.state_dict(), "./mushroom_classifier/result/mushroom.pth")
 
     plt.plot(epochs, loss_train, label="Train")
     plt.plot(epochs, loss_test, label="Test")
     plt.legend()
-    plt.savefig('./mushroom-classifier/result/loss.png')
+    plt.savefig('./mushroom_classifier/result/loss.png')
 
-    with open("./mushroom-classifier/result/logs.txt", "w") as f:
+    with open("./mushroom_classifier/result/logs.txt", "w") as f:
         for l in logs:
             f.write(str(l))
 

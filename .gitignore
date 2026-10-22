@@ -26,5 +26,5 @@ training_data/
 .DS_Store
 
 # Mushroom data and result
-mushroom-classifier/FungiTastic
-mushroom-classifier/result
+mushroom_classifier/FungiTastic
+mushroom_classifier/result

@@ -3,8 +3,8 @@ import polars as pl
 
 from PIL import Image, ImageOps
 
-base_img_dir = "./mushroom-classifier/FungiTastic/FungiTastic-Mini/train/300p/"
-csv_path = "./mushroom-classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Train.csv"
+base_img_dir = "./mushroom_classifier/FungiTastic/FungiTastic-Mini/train/300p/"
+csv_path = "./mushroom_classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Train.csv"
 
 
 df = pl.read_csv(csv_path)
