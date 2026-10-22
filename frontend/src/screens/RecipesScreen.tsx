@@ -59,7 +59,7 @@ export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
                     <span className={s.tabTitle}>{r.title} </span>
                     <span className={s.muted}>
                       {r.preparation_time_minutes ? `${r.preparation_time_minutes} min · ` : ''}
-                      utilise {r.ingredients?.filter((x) => x.available).length ?? r.available_ingredients.length} de tes aliments
+                      utilise {r.ingredients.filter((ingredient) => ingredient.available).length} de tes aliments
                     </span>
                   </span>
                 </button>
