@@ -3,10 +3,14 @@
    Structure : .card > .crop / .row / .qty / .actions
    ========================================================================== */
 
+/* container-type : les contrôles s'adaptent à la largeur de la carte,
+   qui dépend de l'étagère (4 ou 2 colonnes) */
 .card {
+  container: card / inline-size;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
   padding: 10px;
   list-style: none;
   background: #fff;
@@ -82,13 +86,17 @@
 
 .row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 6px;
+  gap: 2px 6px;
 }
 
+/* Un nom long passe à la ligne au lieu de pousser la carte */
 .name {
+  min-width: 0;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .statusText {
@@ -122,9 +130,11 @@
 
 .qty button {
   display: grid;
+  flex: none;
   place-items: center;
   width: 44px;
   height: 36px;
+  padding: 0;
   color: var(--ink);
   background: transparent;
   border: 0;
@@ -146,7 +156,9 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  min-width: 0;
   min-height: 44px;
+  padding: 0 6px;
   font-weight: 700;
   background: #fff;
   border-radius: 10px;
@@ -172,4 +184,30 @@
 .no[aria-pressed='true'] {
   color: #fff;
   background: var(--no);
+}
+
+
+/* --------------------------------------------------------------------------
+   Carte étroite — Oui / Non s'empilent pour rester dans la carte
+   -------------------------------------------------------------------------- */
+
+@container card (max-width: 160px) {
+  .actions {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .actions button {
+    min-height: 38px;
+  }
+
+  .qty button {
+    width: 32px;
+  }
+
+  .unsure {
+    top: 4px;
+    right: 4px;
+    font-size: 10px;
+  }
 }
