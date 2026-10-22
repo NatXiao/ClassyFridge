@@ -13,7 +13,7 @@ from backend.schemas import (
 )
 from backend.utils.fastSam import segment_and_crop
 from backend.utils.food_classification import recognize_food_batch
-from backend.utils.handle_images import decode_image
+from backend.utils.handle_images import decode_image, image_to_data_url
 from backend.utils.recipes import get_recipe_suggestions
 
 
