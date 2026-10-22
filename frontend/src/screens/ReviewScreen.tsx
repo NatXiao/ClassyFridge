@@ -42,7 +42,7 @@ export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
       suggestRecipes(
         Object.entries(decisions)
           .filter(([, d]) => d.status === 'yes')
-          .map(([ingredient_name, d]) => ({ ingredient_name, instance_count: d.qty, unit: '' as const })),
+          .map(([ingredient_name, d]) => ({ ingredient_name, instance_count: d.qty })),
       ),
     onSuccess: (result) => dispatch({ type: 'recipesReady', recipes: result }),
   })
