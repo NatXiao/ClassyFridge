@@ -9,6 +9,12 @@ const recipe = (r: RecipeInput): Recipe => {
     image_url: null,
     available_ingredients: ings.filter((i) => i.available).map((i) => i.name),
     missing_ingredients: ings.filter((i) => !i.available).map((i) => i.name),
+type RecipeInput = Omit<Recipe, 'image_url'>
+
+const recipe = (r: RecipeInput): Recipe => {
+  return {
+    ...r,
+    image_url: null,
   }
 }
 // Simule la latence réseau, pour voir les états de chargement
@@ -45,7 +51,6 @@ export async function mockAnalysis(): Promise<Analysis> {
     ingredients: DETECTED.map(([ingredient_name, instance_count]) => ({
       ingredient_name,
       instance_count,
-      unit: '' as const,
     })),
   }
 }

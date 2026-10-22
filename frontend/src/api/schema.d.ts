@@ -109,7 +109,7 @@ export interface components {
             /** Image Url */
             image_url?: string | null;
             /** Required Ingredients */
-            required_ingredients: components["schemas"]["RecipeIngredient"][];
+            required_ingredients: string[];
             /** Available Ingredients */
             available_ingredients: string[];
             /** Missing Ingredients */
@@ -120,19 +120,6 @@ export interface components {
             preparation_time_minutes?: number | null;
             /** Servings */
             servings?: number | null;
-        };
-        /** RecipeIngredient */
-        RecipeIngredient: {
-            /** Name */
-            name: string;
-            /** Amount */
-            amount: number;
-            /** Unit */
-            unit: string;
-            /** Original */
-            original: string;
-            /** Available */
-            available: boolean;
         };
         /** RecipeRequest */
         RecipeRequest: {
