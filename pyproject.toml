@@ -1,5 +1,5 @@
 [project]
-name = "mushrooms-recognition"
+name = "ClassyFridge"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -15,6 +15,11 @@ dependencies = [
     "torch>=2.14.1",
     "ultralytics>=8.4.183",
     "uvicorn>=0.34.0",
+    "datasets>=5.1.0",
+    "huggingface-hub>=2.2.0",
+    "matplotlib>=3.11.2",
+    "torch>=2.14.1",
+    "ultralytics>=8.4.183",
 ]
 
 [dependency-groups]
