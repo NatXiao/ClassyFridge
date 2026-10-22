@@ -1,19 +1,17 @@
-from functools import lru_cache
 import io
 import json
-from pathlib import Path
 import random
-import numpy
-from datasets import load_dataset
-from huggingface_hub import hf_hub_download
-from torchvision.models import resnet50
-import torch
-from torchvision import transforms
-from PIL import Image
-
-import cv2
+from functools import lru_cache
+from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy
+import torch
+from datasets import load_dataset
+from huggingface_hub import hf_hub_download
+from PIL import Image
+from torchvision import transforms
+from torchvision.models import resnet50
 
 DEBUGGING = False
 MODELS_PATH = "models"

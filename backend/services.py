@@ -4,8 +4,6 @@ Connect the real implementations in this file. Keeping these calls outside the
 routes prevents the HTTP layer from depending on a specific model or API.
 """
 
-import random
-
 from backend.schemas import (
     AnalysisResponse,
     DetectedIngredient,
@@ -15,7 +13,7 @@ from backend.schemas import (
 )
 from backend.utils.fastSam import segment_and_crop
 from backend.utils.food_classification import recognize_food
-from backend.utils.handle_images import decode_image, image_to_data_url
+from backend.utils.handle_images import decode_image
 from backend.utils.recipes import get_recipe_suggestions
 
 
@@ -37,7 +35,7 @@ def analyze_image(image: bytes) -> AnalysisResponse:
     if len(cropped_images) == 0:
         return AnalysisResponse(items=[], ingredients=[])
 
-    # TODO classify each cropped image
+    # classify each cropped image
     detected_ingredients = []
     for index, crop in enumerate(cropped_images):
         top = recognize_food(crop, top_k=4)[0]
