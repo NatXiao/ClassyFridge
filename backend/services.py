@@ -14,6 +14,7 @@ from backend.schemas import (
     RecipeResponse,
 )
 from backend.utils.fastSam import segment_and_crop
+from backend.utils.food_classification import recognize_food
 from backend.utils.handle_images import decode_image
 from backend.utils.recipes import get_recipe_suggestions
 
@@ -39,21 +40,32 @@ def analyze_image(
         return AnalysisResponse(items=[], ingredients=[])
 
     # TODO classify each cropped image
+    detected_ingredients = []
+    for index, crop in enumerate(cropped_images):
+        top = recognize_food(crop, top_k=1)[0]
+        detected_ingredients.append(
+            DetectedIngredient(
+                item_id=index,
+                ingredient_name=top["label"],
+                confidence=top["confidence"],
+            )
+        )
+    
     # TODO see how we could parallelize this step
     # TODO for mushroom results, use our CNN model to classify edible vs poisonous mushrooms
     # TODO return the result in an AnalysisResponse schema
 
     # test with only the segmentation and cropping step for now
     # assume all cropped images are mushrooms
-    test_ingredient_names = ['carrot', 'potato', 'tomato', 'onion', 'garlic', 'pepper', 'mushroom'] 
-    detected_ingredients = [
-        DetectedIngredient(
-            item_id=index,
-            ingredient_name=random.choice(test_ingredient_names),
-            confidence=0.9,
-        )
-        for index in range(len(cropped_images))
-    ]
+    #test_ingredient_names = ['carrot', 'potato', 'tomato', 'onion', 'garlic', 'pepper', 'mushroom'] 
+    # detected_ingredients = [
+    #     DetectedIngredient(
+    #         item_id=index,
+    #         ingredient_name=random.choice(test_ingredient_names),
+    #         confidence=0.9,
+    #     )
+    #     for index in range(len(cropped_images))
+    # ]
 
     ingredient_counts = {}
     for ingredient in detected_ingredients:
