@@ -109,3 +109,21 @@ def recognize_food(image_source, top_k=5):
         for s, i in zip(scores, indices)
     ]
     return results
+
+def recognize_food_batch( images, batch_size, top_k=5):
+    class_names, total_classes = classes_names()
+    model = get_finetuned_model(total_classes) or get_basic_model(total_classes)
+
+    results = []
+    for start in range(0, len(images), batch_size):
+        chunk = images[start:start + batch_size]
+        batch = torch.stack([preprocess(_load_image(img)) for img in chunk])
+        with torch.inference_mode():
+            probs = torch.softmax(model(batch), dim=1)[0]
+    scores, indices = torch.topk(probs, min(top_k, total_classes))
+
+    results =  [
+        {"label": class_names[i.item()], "confidence": round(s.item(), 4)}
+        for s, i in zip(scores, indices)
+    ]
+    return results
