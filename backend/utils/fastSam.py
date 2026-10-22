@@ -2,6 +2,7 @@ import math
 from functools import lru_cache
 
 import cv2
+from PIL import Image
 from ultralytics import FastSAM
 
 from backend.utils.handle_images import resize_image
@@ -92,7 +93,7 @@ def segment_and_crop(image, img_size, confidence, iou):
     model = get_fast_sam("FastSAM-x.pt")
 
     results = model(
-        image,
+        Image.fromarray(image),
         retina_masks=True,
         imgsz=img_size,
         conf=confidence,
@@ -107,7 +108,10 @@ def segment_and_crop(image, img_size, confidence, iou):
     cropped_images = crop_boxes(image, result.boxes)
     if DEBUGGING:
         for i, cropped_image in enumerate(cropped_images):
-            cv2.imwrite(f"{DEBUGGING_DIR}/cropped_image_{i + 1}.jpg", cropped_image)
+            cv2.imwrite(
+                f"{DEBUGGING_DIR}/cropped_image_{i + 1}.jpg",
+                cv2.cvtColor(cropped_image, cv2.COLOR_RGB2BGR),
+            )
 
     return result, cropped_images
 
