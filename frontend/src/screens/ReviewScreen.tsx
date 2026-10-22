@@ -1,7 +1,13 @@
 import { useState, type Dispatch } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { ArrowDown } from 'lucide-react'
-import { suggestRecipes, classifyImage, type Analysis } from '../api/client'
+import {
+  DEFAULT_RECIPE_OPTIONS,
+  suggestRecipes,
+  classifyImage,
+  type Analysis,
+  type RecipeOptions,
+} from '../api/client'
 import { enqueue } from '../api/queue'
 import { confirmedStock, type Decision, type FlowAction } from '../state/flow'
 import { Door } from '../components/Door'
@@ -18,11 +24,46 @@ type Props = {
 }
 
 const SHELF_SIZE = 4
+type RecipeOptionInputs = Record<keyof RecipeOptions, string>
 
 export function ReviewScreen({ decisions, dispatch }: Props) {
   const [retakeId, setRetakeId] = useState<string | null>(null)
 
-  // One deck per group: crops of the same food are stacked, manual items stand alone
+  /* --- Recipe preferences (#16) ------------------------------------------- */
+
+  const [recipeOptionInputs, setRecipeOptionInputs] = useState<RecipeOptionInputs>({
+    max_missing_ingredients: String(DEFAULT_RECIPE_OPTIONS.max_missing_ingredients),
+    min_used_ingredients: String(DEFAULT_RECIPE_OPTIONS.min_used_ingredients),
+    limit: String(DEFAULT_RECIPE_OPTIONS.limit),
+  })
+
+  const updateRecipeOption = (option: keyof RecipeOptions, value: string) => {
+    setRecipeOptionInputs((current) => ({ ...current, [option]: value }))
+  }
+
+  const recipeOptions: RecipeOptions = {
+    max_missing_ingredients: Number(recipeOptionInputs.max_missing_ingredients),
+    min_used_ingredients: Number(recipeOptionInputs.min_used_ingredients),
+    limit: Number(recipeOptionInputs.limit),
+  }
+
+  const recipeOptionsAreValid =
+    recipeOptionInputs.max_missing_ingredients !== ''
+    && recipeOptionInputs.min_used_ingredients !== ''
+    && recipeOptionInputs.limit !== ''
+    && Number.isInteger(recipeOptions.max_missing_ingredients)
+    && Number.isInteger(recipeOptions.min_used_ingredients)
+    && Number.isInteger(recipeOptions.limit)
+    && recipeOptions.max_missing_ingredients >= 0
+    && recipeOptions.max_missing_ingredients <= 20
+    && recipeOptions.min_used_ingredients >= 1
+    && recipeOptions.min_used_ingredients <= 20
+    && recipeOptions.limit >= 1
+    && recipeOptions.limit <= 20
+
+  /* --- Cards: one deck per group ------------------------------------------ */
+
+  // Crops of the same food are stacked, manual items stand alone
   const decks = new Map<string, Decision[]>()
   for (const d of Object.values(decisions)) decks.set(d.group, [...(decks.get(d.group) ?? []), d])
   const slots = [...decks.values()]
@@ -52,6 +93,7 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
           ingredient_name: d.name,
           instance_count: Math.max(1, Math.round(d.qty)),
         })),
+        recipeOptions,
       ),
     onSuccess: (result) => dispatch({ type: 'recipesReady', recipes: result }),
   })
@@ -96,9 +138,38 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
             <p className={s.stat}><span>Discarded</span><strong className={s.no}>{no}</strong></p>
             <p className={s.stat}><span>To check</span><strong>{pending}</strong></p>
 
+            <div className={s.recipeOptions}>
+              <h3>Recipe preferences</h3>
+              <label>
+                <span>Maximum missing ingredients</span>
+                <input type="number" min="0" max="20"
+                  value={recipeOptionInputs.max_missing_ingredients}
+                  onChange={(e) => updateRecipeOption('max_missing_ingredients', e.target.value)} />
+              </label>
+              <label>
+                <span>Minimum of your ingredients used</span>
+                <input type="number" min="1" max="20"
+                  value={recipeOptionInputs.min_used_ingredients}
+                  onChange={(e) => updateRecipeOption('min_used_ingredients', e.target.value)} />
+              </label>
+              <label>
+                <span>Number of recipes</span>
+                <input type="number" min="1" max="20"
+                  value={recipeOptionInputs.limit}
+                  onChange={(e) => updateRecipeOption('limit', e.target.value)} />
+              </label>
+            </div>
+
             <div className={s.ctaZone}>
-              <button type="button" className={s.cta} disabled={!canContinue || recipes.isPending} onClick={() => recipes.mutate()}>
-                {recipes.isPending ? 'Searching…' : 'See 3 recipes'} <ArrowDown size={18} />
+              <button type="button" className={s.cta}
+                disabled={!canContinue || !recipeOptionsAreValid || recipes.isPending}
+                onClick={() => recipes.mutate()}>
+                {recipes.isPending
+                  ? 'Finding recipes…'
+                  : recipeOptionsAreValid
+                    ? `See ${recipeOptions.limit} recipe${recipeOptions.limit !== 1 ? 's' : ''}`
+                    : 'Enter valid preferences'}{' '}
+                <ArrowDown size={18} />
               </button>
               {!canContinue && (
                 <p className={s.hint}>
@@ -108,6 +179,9 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
                       ? `${pending} item${pending > 1 ? 's' : ''} left to check`
                       : 'Confirm at least one item'}
                 </p>
+              )}
+              {canContinue && !recipeOptionsAreValid && (
+                <p className={s.hint}>Enter values within the displayed ranges.</p>
               )}
               {recipes.isError && <p className={s.error}>{recipes.error.message}</p>}
               <button type="button" className={s.link} onClick={() => dispatch({ type: 'reset' })}>Change photo</button>

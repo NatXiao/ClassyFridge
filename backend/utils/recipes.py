@@ -85,6 +85,7 @@ def build_recipe(
         recipe_id=str(recipe_details.get("id", "")),
         title=recipe_details.get("title", ""),
         image_url=recipe_details.get("image") or candidate.get("image"),
+        source_url=recipe_details.get("sourceUrl"),
         ingredients=[
             RecipeIngredient(
                 name=ing.get("name", ""),
@@ -109,6 +110,7 @@ def build_recipe(
 def get_recipe_suggestions(
     ingredients: list[str],
     max_missing_ingredients: int = MAX_MISSING_INGREDIENTS,
+    min_used_ingredients: int = MIN_INGREDIENTS,
     limit: int = LIMIT_RECIPES,
 ) -> list[Recipe]:
     # find recipes with the ingredients we have
@@ -119,7 +121,7 @@ def get_recipe_suggestions(
         recipe
         for recipe in candidate_recipes
         if len(recipe.get("missedIngredients", [])) <= max_missing_ingredients
-        and len(recipe.get("usedIngredients", [])) >= MIN_INGREDIENTS
+        and len(recipe.get("usedIngredients", [])) >= min_used_ingredients
     ]
 
     # limit the number of recipes returned

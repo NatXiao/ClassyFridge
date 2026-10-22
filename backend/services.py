@@ -97,7 +97,12 @@ def suggest_recipes(request: RecipeRequest) -> RecipeResponse:
         )
     )
 
-    recipes = get_recipe_suggestions(ingredient_names)
+    recipes = get_recipe_suggestions(
+        ingredient_names,
+        max_missing_ingredients=request.max_missing_ingredients,
+        min_used_ingredients=request.min_used_ingredients,
+        limit=request.limit,
+    )
 
     return RecipeResponse(recipes=recipes)
 

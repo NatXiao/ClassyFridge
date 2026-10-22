@@ -1,6 +1,6 @@
 /* ==========================================================================
    RecipeSheet — fiche recette posée sur la table
-   Structure : .sheet > .head (titre + méta) / .image / .columns
+   Structure : .sheet > .head (image + titre + méta) / .columns
                         .columns > .ingredients / .steps
    ========================================================================== */
 
@@ -23,17 +23,51 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   gap: 16px;
   padding-bottom: 20px;
   border-bottom: 2px solid #EDE6D6;
 }
 
+.titleGroup {
+  display: flex;
+  flex: 1 1 380px;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
 .title {
+  margin: 0;
   font-size: clamp(28px, 4vw, 44px);
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -1px;
+}
+
+.titleWithLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sourceLink {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  color: var(--ink);
+  background: #F2EBDC;
+  border-radius: 50%;
+  transition: color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.sourceLink:hover {
+  color: #fff;
+  background: var(--accent);
+  transform: translateY(-1px);
 }
 
 .meta {
@@ -90,16 +124,13 @@
 }
 
 
-/* --------------------------------------------------------------------------
-   Photo de la recette
-   -------------------------------------------------------------------------- */
-
 .image {
-  width: 100%;
-  max-height: 340px;
-  aspect-ratio: 3 / 2;
+  flex: none;
+  width: clamp(88px, 12vw, 128px);
+  aspect-ratio: 1;
   object-fit: cover;
-  border-radius: 14px;
+  object-position: center;
+  border-radius: 12px;
 }
 
 

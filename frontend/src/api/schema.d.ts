@@ -146,6 +146,8 @@ export interface components {
             title: string;
             /** Image Url */
             image_url?: string | null;
+            /** Source Url */
+            source_url?: string | null;
             /** Ingredients */
             ingredients: components["schemas"]["RecipeIngredient"][];
             /** Instructions */
@@ -172,6 +174,12 @@ export interface components {
         RecipeRequest: {
             /** Ingredients */
             ingredients: components["schemas"]["IngredientCount"][];
+            /** Max Missing Ingredients */
+            max_missing_ingredients: number;
+            /** Min Used Ingredients */
+            min_used_ingredients: number;
+            /** Limit */
+            limit: number;
         };
         /** RecipeResponse */
         RecipeResponse: {
