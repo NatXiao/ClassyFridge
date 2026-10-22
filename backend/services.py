@@ -6,8 +6,10 @@ routes prevents the HTTP layer from depending on a specific model or API.
 
 from backend.schemas import (
     AnalysisResponse,
+    ClassificationResponse,
     DetectedIngredient,
     IngredientCount,
+    Prediction,
     RecipeRequest,
     RecipeResponse,
 )
@@ -103,3 +105,27 @@ def suggest_recipes(request: RecipeRequest) -> RecipeResponse:
     )
 
     return RecipeResponse(recipes=recipes)
+
+
+TOP_K = 5
+
+
+def is_edible(crop) -> bool | None:
+    """Mushroom classifier hook: True / False for a mushroom, None if unknown.
+    TODO(mushroom team): plug the inference from mushroom-classifier/mnn.py here."""
+    return None
+
+
+def _classify(crop) -> tuple[list[Prediction], bool | None]:
+    preds = [
+        Prediction(ingredient_name=p["label"], confidence=p["confidence"])
+        for p in recognize_food(crop, top_k=TOP_K)
+    ]
+    is_mushroom = bool(preds) and "mushroom" in preds[0].ingredient_name.lower()
+    return preds, (is_edible(crop) if is_mushroom else None)
+
+
+def classify_photo(image: bytes) -> ClassificationResponse:
+    """Retake photo: one item, sent straight to the classifier (no segmentation)."""
+    preds, edible = _classify(decode_image(image))
+    return ClassificationResponse(predictions=preds, edible=edible)

@@ -30,10 +30,11 @@ export async function mockAnalysis(): Promise<Analysis> {
   // Toujours UN item par instance : 3 tomates = 3 items
   let nextId = 0
   const items: Analysis['items'] = DETECTED.flatMap(([name, count, confidence]) =>
-    Array.from({ length: count }, () => ({
-      item_id: nextId++,
-      ingredient_name: name,
-      confidence,
+        Array.from({ length: count }, () => ({
+        item_id: nextId++,
+        ingredient_name: name,
+        confidence,
+        predictions: guessesFor(name, confidence),
     })),
   )
 
@@ -104,4 +105,27 @@ export async function mockRecipes(): Promise<Recipe[]> {
       ],
     }),
   ]
+}
+// Fake model guesses, best first. 'apple' is wrong on purpose: the right answer is guess 3
+const MOCK_GUESSES: Record<string, string[]> = {
+  apple: ['apple', 'red pepper', 'tomato', 'peach', 'plum'],
+}
+const DISTRACTORS = ['potato', 'red pepper', 'peach', 'onion', 'plum', 'radish']
+
+const guessesFor = (name: string, confidence: number) =>
+  (MOCK_GUESSES[name] ?? [name, ...DISTRACTORS.filter((d) => d !== name)].slice(0, 5)).map(
+    (ingredient_name, i) => ({
+      ingredient_name,
+      confidence: Math.round((i === 0 ? confidence : (1 - confidence) / (i + 1)) * 100) / 100,
+    }),
+  )
+
+const POOL = ['nectarine', 'cherry', 'beetroot', 'strawberry', 'red onion',
+  'pomegranate', 'raspberry', 'apricot', 'radicchio', 'chili pepper']
+
+export async function mockClassify(exclude: string[]) {
+  await delay(700)
+  return POOL.filter((n) => !exclude.includes(n))
+    .slice(0, 5)
+    .map((ingredient_name, i) => ({ ingredient_name, confidence: Math.round((0.14 - i * 0.02) * 100) / 100 }))
 }

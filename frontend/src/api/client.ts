@@ -43,3 +43,13 @@ export async function suggestRecipes(
   if (error) throw new Error(String((error as { detail?: string }).detail))
   return data.recipes
 }
+
+// Retake photo: the picture goes straight to the classifier
+export async function classifyImage(file: File): Promise<Classification> {
+  if (USE_MOCKS) return mockClassify()
+  const body = new FormData()
+  body.append('image', file)
+  const res = await fetch('/api/v1/classifications', { method: 'POST', body })
+  if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText)
+  return res.json()
+}
