@@ -45,7 +45,7 @@ image_to_tensor = transforms.Compose([
 ])
 
 def transform_image(image):
-    return transform_image(image)
+    return image_to_tensor(image)
 
 
 class MushroomDataset(Dataset):
