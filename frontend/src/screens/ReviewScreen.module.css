@@ -156,6 +156,43 @@
   color: var(--no);
 }
 
+.recipeOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: #fff;
+  border-radius: 12px;
+}
+
+.recipeOptions h3 {
+  margin: 0 0 2px;
+  font-size: 16px;
+}
+
+.recipeOptions label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3E4B55;
+}
+
+.recipeOptions input {
+  box-sizing: border-box;
+  width: 54px;
+  min-height: 36px;
+  padding: 4px 6px;
+  font: inherit;
+  text-align: center;
+  color: var(--ink);
+  background: #F2F5F3;
+  border: 1px solid var(--fridge-border);
+  border-radius: 8px;
+}
+
 /* --- Zone d'action, poussée en bas de la porte --------------------------- */
 
 .ctaZone {
