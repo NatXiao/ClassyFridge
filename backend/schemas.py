@@ -16,12 +16,10 @@ class DetectedIngredient(BaseModel):
     image_url: str | None = None
     confidence: float = Field(ge=0, le=1)
     predictions: list[Prediction] = Field(default_factory=list)  # top 5, best first
-    edible: bool | None = None  # mushrooms only: False = poisonous
 
 
 class ClassificationResponse(BaseModel):
     predictions: list[Prediction]
-    edible: bool | None = None
 
 
 class IngredientCount(BaseModel):

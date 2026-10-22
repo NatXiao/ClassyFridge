@@ -3,7 +3,7 @@ import { Check, X, Trash2, Camera, ListChecks, Loader2 } from 'lucide-react'
 import { QtyInput } from './QtyInput'
 import { label } from '../api/labels'
 import { CLASSES } from '../api/classes'
-import { isLocked, type Decision } from '../state/flow'
+import type { Decision } from '../state/flow'
 import s from './FoodCard.module.css'
 
 type Props = {
@@ -18,10 +18,9 @@ type Props = {
 const STATUS_TEXT = { yes: 'Confirmed', no: 'Discarded', null: 'To check' } as const
 
 export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemove }: Props) {
-  const { status, qty, unit, candidates, attempt, exhausted, edible, classifying, manual } = card
+  const { status, qty, unit, candidates, attempt, exhausted, classifying, manual } = card
   const [selecting, setSelecting] = useState(false)
   const name = label(card.name)
-  const locked = isLocked(card)
   const current = candidates[attempt]
 
   const pick = (value: string) => {
@@ -30,7 +29,7 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
   }
 
   return (
-    <article className={`${s.card} ${s[`status_${status}`]} ${exhausted ? s.exhausted : ''} ${locked ? s.poisonous : ''}`}>
+    <article className={`${s.card} ${s[`status_${status}`]} ${exhausted ? s.exhausted : ''}`}>
       {/* --- image + badges --- */}
       <div className={s.crop}>
         {card.crop
@@ -101,15 +100,13 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
         </div>
       ) : (
         <div className={s.actions}>
-          <button type="button" className={s.yes} aria-pressed={status === 'yes'} disabled={locked}
+          <button type="button" className={s.yes} aria-pressed={status === 'yes'}
             onClick={() => onDecide({ status: status === 'yes' ? null : 'yes' })}>
             <Check size={16} strokeWidth={3} /> Yes
           </button>
-          <button type="button" className={s.no} aria-pressed={status === 'no'} disabled={locked} onClick={onReject}>
+          <button type="button" className={s.no} aria-pressed={status === 'no'} onClick={onReject}>
             <X size={16} strokeWidth={3} /> No
           </button>
-          {edible === true && <span className={s.edible}><Check size={14} strokeWidth={3} /> Edible</span>}
-          {edible === false && <span className={s.toxic}><X size={14} strokeWidth={3} /> Not edible</span>}
         </div>
       )}
     </article>

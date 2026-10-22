@@ -2,7 +2,7 @@ import { useState, type Dispatch } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, ChevronRight, CheckCheck } from 'lucide-react'
 import { FoodCard } from './FoodCard'
-import { isLocked, type Decision, type FlowAction } from '../state/flow'
+import type { Decision, FlowAction } from '../state/flow'
 import s from './Deck.module.css'
 
 type Props = {
@@ -20,7 +20,7 @@ export function Deck({ cards, index, dispatch, onRetake }: Props) {
   const confirmed = cards.filter((c) => c.status === 'yes').length
   // cards still on the model's first guess: safe to confirm in one click
   const untouched = cards.filter(
-    (c) => c.status === null && c.attempt === 0 && !c.exhausted && !c.classifying && !isLocked(c),
+    (c) => c.status === null && c.attempt === 0 && !c.exhausted && !c.classifying,
   )
 
   // after a "Yes", bring the next card still to check to the front

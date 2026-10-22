@@ -41,7 +41,7 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
   const retake = (id: string, file: File) => {
     dispatch({ type: 'retake', id, crop: URL.createObjectURL(file) })
     enqueue(() => classifyImage(file))
-      .then((r) => dispatch({ type: 'classified', id, candidates: r.predictions, edible: r.edible }))
+      .then((r) => dispatch({ type: 'classified', id, candidates: r.predictions }))
       .catch((e: Error) => dispatch({ type: 'classifyFailed', id, error: e.message }))
   }
 
