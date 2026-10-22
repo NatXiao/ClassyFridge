@@ -32,7 +32,7 @@ def analyze_image(
 
     # segment and crop the images into a list of cropped images
     result, cropped_images = segment_and_crop(
-        decoded_image, img_size=1024, confidence=0.7, iou=0.5
+        decoded_image, img_size=1024, confidence=0.8, iou=0.3
     )
 
     # should never happen, TODO see what we do if this happens
@@ -42,7 +42,7 @@ def analyze_image(
     # TODO classify each cropped image
     detected_ingredients = []
     for index, crop in enumerate(cropped_images):
-        top = recognize_food(crop, top_k=1)[0]
+        top = recognize_food(crop, top_k=4)[0]
         detected_ingredients.append(
             DetectedIngredient(
                 item_id=index,

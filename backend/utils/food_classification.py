@@ -2,7 +2,8 @@ from functools import lru_cache
 import io
 import json
 from pathlib import Path
-
+import random
+import numpy
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
 from torchvision.models import resnet50
@@ -10,13 +11,19 @@ import torch
 from torchvision import transforms
 from PIL import Image
 
+import cv2
+
+import matplotlib.pyplot as plt
+
+DEBUGGING = False
 MODELS_PATH = "models"
 IMG_SIZE = 224
 FINETUNED_PATH = Path(f"../{MODELS_PATH}/finetuned_resnet500.pt")
 REPO_ID = "ibrahimdaud/raw-food-recognition-models"
 DATASET_ID = "ibrahimdaud/raw-food-recognition"
-CLASS_NAMES_PATH = Path(__file__).parent.parent / "class_names.json"
-CLASS_NAMES_PATH = Path("../class_names.json")
+
+DEBUGGING_DIR = "debugging_images"
+CLASS_NAMES_PATH = Path("class_names.json")
 
 preprocess = transforms.Compose([
     transforms.Resize((IMG_SIZE, IMG_SIZE)),
@@ -77,6 +84,8 @@ def _load_image(source):
         image = source
     elif isinstance(source, (bytes, bytearray)):
         image = Image.open(io.BytesIO(source))
+    elif isinstance(source, numpy.ndarray):
+        image = Image.fromarray(source)
     else:
         image = Image.open(source) 
     return image.convert("RGB")
@@ -85,6 +94,12 @@ def recognize_food(image_source, top_k=5):
     class_names, total_classes = classes_names()
     model = get_finetuned_model(total_classes) or get_basic_model(total_classes)
     image = _load_image(image_source)
+    if DEBUGGING:
+        plt.figure(figsize=(6, 6))
+        plt.imshow(image)
+        plt.axis("off")
+        plt.title("Image:")
+        plt.savefig(f"image{random.randint(1, 10)}")
     tensor = preprocess(image).unsqueeze(0)
 
     with torch.inference_mode():
@@ -95,4 +110,5 @@ def recognize_food(image_source, top_k=5):
         {"label": class_names[i.item()], "confidence": round(s.item(), 4)}
         for s, i in zip(scores, indices)
     ]
+    print(results)
     return results
