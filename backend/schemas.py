@@ -41,6 +41,7 @@ class Recipe(BaseModel):
     recipe_id: str
     title: str
     image_url: str | None = None
+    source_url: str | None = None
     ingredients: list[RecipeIngredient]
     instructions: list[str]
     preparation_time_minutes: int | None = None

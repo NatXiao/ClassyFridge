@@ -85,6 +85,7 @@ def build_recipe(
         recipe_id=str(recipe_details.get("id", "")),
         title=recipe_details.get("title", ""),
         image_url=recipe_details.get("image") or candidate.get("image"),
+        source_url=recipe_details.get("sourceUrl"),
         ingredients=[
             RecipeIngredient(
                 name=ing.get("name", ""),

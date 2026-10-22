@@ -110,6 +110,8 @@ export interface components {
             title: string;
             /** Image Url */
             image_url?: string | null;
+            /** Source Url */
+            source_url?: string | null;
             /** Ingredients */
             ingredients: components["schemas"]["RecipeIngredient"][];
             /** Instructions */
