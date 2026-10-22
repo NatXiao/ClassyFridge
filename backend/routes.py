@@ -3,6 +3,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from backend import services
 from backend.schemas import (
     AnalysisResponse,
+    ClassificationResponse,
     HealthResponse,
     RecipeRequest,
     RecipeResponse,
@@ -46,3 +47,13 @@ async def create_analysis(
 )
 def recipe_suggestions(request: RecipeRequest) -> RecipeResponse:
     return services.suggest_recipes(request)
+
+
+@router.post(
+    "/classifications", response_model=ClassificationResponse, tags=["analyses"]
+)
+async def create_classification(
+    image: UploadFile = File(...),
+) -> ClassificationResponse:
+    content = await _read_image(image)
+    return services.classify_photo(content)

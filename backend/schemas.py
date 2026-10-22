@@ -5,11 +5,23 @@ class HealthResponse(BaseModel):
     status: str = "ok"
 
 
+class Prediction(BaseModel):
+    ingredient_name: str
+    confidence: float = Field(ge=0, le=1)
+
+
 class DetectedIngredient(BaseModel):
     item_id: int
     ingredient_name: str
     image_url: str | None = None
     confidence: float = Field(ge=0, le=1)
+    predictions: list[Prediction] = Field(default_factory=list)  # top 5, best first
+    edible: bool | None = None  # mushrooms only: False = poisonous
+
+
+class ClassificationResponse(BaseModel):
+    predictions: list[Prediction]
+    edible: bool | None = None
 
 
 class IngredientCount(BaseModel):

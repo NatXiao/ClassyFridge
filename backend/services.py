@@ -8,12 +8,14 @@ import random
 
 from backend.schemas import (
     AnalysisResponse,
+    ClassificationResponse,
     DetectedIngredient,
     IngredientCount,
+    Prediction,
     RecipeRequest,
     RecipeResponse,
 )
-from backend.utils.fastSam import segment_and_crop
+from backend.utils.fastSam import img, segment_and_crop
 from backend.utils.food_classification import recognize_food
 from backend.utils.handle_images import decode_image, image_to_data_url
 from backend.utils.recipes import get_recipe_suggestions
@@ -41,21 +43,27 @@ def analyze_image(image: bytes) -> AnalysisResponse:
     detected_ingredients = []
     for index, crop in enumerate(cropped_images):
         top = recognize_food(crop, top_k=4)[0]
-        detected_ingredients.append(
-            DetectedIngredient(
-                item_id=index,
-                ingredient_name=top["label"],
-                confidence=top["confidence"],
+        detected_ingredients = []
+        for index, crop in enumerate(cropped_images):
+            preds, edible = _classify(crop)
+            detected_ingredients.append(
+                DetectedIngredient(
+                    item_id=index,
+                    ingredient_name=preds[0].ingredient_name,
+                    confidence=preds[0].confidence,
+                    image_url=image_to_data_url(crop[index]),
+                    predictions=preds,
+                    edible=edible,
+                )
             )
-        )
-    
+
     # TODO see how we could parallelize this step
     # TODO for mushroom results, use our CNN model to classify edible vs poisonous mushrooms
     # TODO return the result in an AnalysisResponse schema
 
     # test with only the segmentation and cropping step for now
     # assume all cropped images are mushrooms
-    #test_ingredient_names = ['carrot', 'potato', 'tomato', 'onion', 'garlic', 'pepper', 'mushroom'] 
+    # test_ingredient_names = ['carrot', 'potato', 'tomato', 'onion', 'garlic', 'pepper', 'mushroom']
     # detected_ingredients = [
     #     DetectedIngredient(
     #         item_id=index,
@@ -96,3 +104,27 @@ def suggest_recipes(request: RecipeRequest) -> RecipeResponse:
     recipes = get_recipe_suggestions(ingredient_names)
 
     return RecipeResponse(recipes=recipes)
+
+
+TOP_K = 5
+
+
+def is_edible(crop) -> bool | None:
+    """Mushroom classifier hook: True / False for a mushroom, None if unknown.
+    TODO(mushroom team): plug the inference from mushroom-classifier/mnn.py here."""
+    return None
+
+
+def _classify(crop) -> tuple[list[Prediction], bool | None]:
+    preds = [
+        Prediction(ingredient_name=p["label"], confidence=p["confidence"])
+        for p in recognize_food(crop, top_k=TOP_K)
+    ]
+    is_mushroom = bool(preds) and "mushroom" in preds[0].ingredient_name.lower()
+    return preds, (is_edible(crop) if is_mushroom else None)
+
+
+def classify_photo(image: bytes) -> ClassificationResponse:
+    """Retake photo: one item, sent straight to the classifier (no segmentation)."""
+    preds, edible = _classify(decode_image(image))
+    return ClassificationResponse(predictions=preds, edible=edible)

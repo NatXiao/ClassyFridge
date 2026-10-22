@@ -4,7 +4,6 @@ from backend import services
 from backend.main import create_app
 from backend.schemas import AnalysisResponse, RecipeResponse
 
-
 client = TestClient(create_app())
 image = {"image": ("fridge.jpg", b"image bytes", "image/jpeg")}
 
@@ -21,6 +20,7 @@ def test_openapi_contains_all_routes() -> None:
         "/api/v1/health",
         "/api/v1/analyses",
         "/api/v1/recipes/suggestions",
+        "/api/v1/classifications",
     }
 
 
