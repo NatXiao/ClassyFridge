@@ -13,7 +13,7 @@ from PIL import Image
 from torchvision import transforms
 from torchvision.models import resnet50
 
-DEBUGGING = False
+DEBUGGING = True
 MODELS_PATH = "models"
 IMG_SIZE = 224
 FINETUNED_PATH = Path(f"../{MODELS_PATH}/finetuned_resnet500.pt")
@@ -50,7 +50,7 @@ def _build_class_names():
 @lru_cache(maxsize=1)
 def classes_names():
     if not CLASS_NAMES_PATH.exists():
-        _build_class_names()
+        class_names = _build_class_names()
     with open(CLASS_NAMES_PATH, encoding="utf-8") as f:
         class_names = json.load(f) 
     return class_names, len(class_names)
@@ -97,7 +97,7 @@ def recognize_food(image_source, top_k=5):
         plt.imshow(image)
         plt.axis("off")
         plt.title("Image:")
-        plt.savefig(f"image{random.randint(1, 10)}")
+        plt.savefig(f"{DEBUGGING_DIR}/image{random.randint(1, 10)}")
     tensor = preprocess(image).unsqueeze(0)
 
     with torch.inference_mode():
@@ -110,20 +110,25 @@ def recognize_food(image_source, top_k=5):
     ]
     return results
 
-def recognize_food_batch( images, batch_size, top_k=5):
+def recognize_food_batch( images, batch_size = 4, top_k=5):
     class_names, total_classes = classes_names()
     model = get_finetuned_model(total_classes) or get_basic_model(total_classes)
 
     results = []
     for start in range(0, len(images), batch_size):
         chunk = images[start:start + batch_size]
-        batch = torch.stack([preprocess(_load_image(img)) for img in chunk])
+        pil_images = [_load_image(img) for img in chunk]
+        if DEBUGGING:
+            for offset, pil in enumerate(pil_images):
+                pil.save(f"{DEBUGGING_DIR}/crop_{start + offset}.png")
+        batch = torch.stack([preprocess(pil) for pil in pil_images])
         with torch.inference_mode():
-            probs = torch.softmax(model(batch), dim=1)[0]
-    scores, indices = torch.topk(probs, min(top_k, total_classes))
-
-    results =  [
-        {"label": class_names[i.item()], "confidence": round(s.item(), 4)}
-        for s, i in zip(scores, indices)
-    ]
+            probs = torch.softmax(model(batch), dim=1)
+        scores, indices = torch.topk(probs, min(top_k, total_classes))
+        results.extend(  [
+            {"label": class_names[i.item()], "confidence": round(s.item(), 4)}
+            for s, i in zip(row_scores, row_indices)
+        ]            
+        for row_scores, row_indices in zip(scores, indices)
+        )
     return results

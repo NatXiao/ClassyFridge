@@ -37,7 +37,7 @@ def analyze_image(image: bytes) -> AnalysisResponse:
 
     # classify each cropped image
 
-    prediction = recognize_food_batch(cropped_images,batch = 4, top_k=4)
+    prediction = recognize_food_batch(cropped_images, batch_size=len(cropped_images), top_k=4)
     detected_ingredients = [
         DetectedIngredient(
             item_id=index,
