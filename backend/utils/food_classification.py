@@ -110,4 +110,5 @@ def recognize_food(image_source, top_k=5):
         {"label": class_names[i.item()], "confidence": round(s.item(), 4)}
         for s, i in zip(scores, indices)
     ]
+    print(results)
     return results
