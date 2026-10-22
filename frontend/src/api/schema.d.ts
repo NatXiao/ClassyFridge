@@ -77,6 +77,8 @@ export interface components {
             item_id: number;
             /** Ingredient Name */
             ingredient_name: string;
+            /** Image Url */
+            image_url?: string | null;
             /** Confidence */
             confidence: number;
         };

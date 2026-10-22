@@ -14,7 +14,7 @@ from backend.schemas import (
     RecipeResponse,
 )
 from backend.utils.fastSam import segment_and_crop
-from backend.utils.handle_images import decode_image
+from backend.utils.handle_images import decode_image, image_to_data_url
 from backend.utils.recipes import get_recipe_suggestions
 
 
@@ -22,9 +22,7 @@ class ServiceNotConfiguredError(RuntimeError):
     """Raised while an existing project function has not yet been connected."""
 
 
-def analyze_image(
-    image: bytes
-) -> AnalysisResponse:
+def analyze_image(image: bytes) -> AnalysisResponse:
     """Segment, crop, classify, aggregate, and return the detected ingredients."""
     # decode the image bytes into a NumPy array
     decoded_image = decode_image(image)
@@ -45,12 +43,21 @@ def analyze_image(
 
     # test with only the segmentation and cropping step for now
     # assume all cropped images are mushrooms
-    test_ingredient_names = ['carrot', 'potato', 'tomato', 'onion', 'garlic', 'pepper', 'mushroom'] 
+    test_ingredient_names = [
+        "carrot",
+        "potato",
+        "tomato",
+        "onion",
+        "garlic",
+        "pepper",
+        "mushroom",
+    ]
     detected_ingredients = [
         DetectedIngredient(
             item_id=index,
             ingredient_name=random.choice(test_ingredient_names),
             confidence=0.9,
+            image_url=image_to_data_url(cropped_images[index]),
         )
         for index in range(len(cropped_images))
     ]
@@ -58,12 +65,17 @@ def analyze_image(
     ingredient_counts = {}
     for ingredient in detected_ingredients:
         ingredient_name = ingredient.ingredient_name
-        ingredient_counts[ingredient_name] = ingredient_counts.get(ingredient_name, 0) + 1
+        ingredient_counts[ingredient_name] = (
+            ingredient_counts.get(ingredient_name, 0) + 1
+        )
 
-    # response  
+    # response
     analysis_response = AnalysisResponse(
         items=detected_ingredients,
-        ingredients=[IngredientCount(ingredient_name=name, instance_count=count) for name, count in ingredient_counts.items()],
+        ingredients=[
+            IngredientCount(ingredient_name=name, instance_count=count)
+            for name, count in ingredient_counts.items()
+        ],
     )
 
     return analysis_response
@@ -73,12 +85,11 @@ def suggest_recipes(request: RecipeRequest) -> RecipeResponse:
     """Call the existing recipe API and map its output to the response schema."""
     ingredient_names = list(
         dict.fromkeys(
-            ingredient.ingredient_name.strip().lower() for ingredient in request.ingredients
+            ingredient.ingredient_name.strip().lower()
+            for ingredient in request.ingredients
         )
     )
 
-    recipes = get_recipe_suggestions(
-        ingredient_names
-    )
+    recipes = get_recipe_suggestions(ingredient_names)
 
     return RecipeResponse(recipes=recipes)
