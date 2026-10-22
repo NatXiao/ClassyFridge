@@ -12,6 +12,7 @@ export function RecipeSheet({ recipe, decisions }: Props) {
   const base = recipe.servings ?? null
   const [portions, setPortions] = useState(base ?? 2)
   const scale = base ? portions / base : 1
+  const structured = (recipe.ingredients?.length ?? 0) > 0
 
   // "eggs" ou "cheddar cheese" côté Spoonacular ↔ "egg" ou "cheddar" côté stock
   const stockFor = (name: string) => {
@@ -19,8 +20,8 @@ export function RecipeSheet({ recipe, decisions }: Props) {
     return key ? decisions[key] : undefined
   }
 
-  const have = recipe.ingredients.filter((ingredient) => ingredient.available)
-  const missing = recipe.ingredients.filter((ingredient) => !ingredient.available)
+  const have = recipe.ingredients?.filter((i) => i.available) ?? []
+  const missing = recipe.ingredients?.filter((i) => !i.available) ?? []
 
   return (
     <article className={s.sheet}>
@@ -49,40 +50,49 @@ export function RecipeSheet({ recipe, decisions }: Props) {
         <section className={s.ingredients} aria-label="Ingrédients">
           <h3>Ingrédients</h3>
 
-          <p className={s.groupYes}>Dans ton frigo</p>
-          <ul className={s.list}>
-            {have.map((ing, i) => {
-              const need = ing.amount * scale
-              const stock = stockFor(ing.name)
-              // on ne compare que si les unités correspondent (pièces↔pièces, g↔g)
-              const comparable = stock && ((stock.unit === 'g' && ing.unit === 'g') || (stock.unit === '' && ['', 'large', 'medium', 'small'].includes(ing.unit)))
-              const short = comparable && stock.qty < need
-              return (
-                <li key={i}>
-                  <span className={s.iconYes}><Check size={14} strokeWidth={3} /></span>
-                  <span className={s.amount}>{formatAmount(need, ing.unit)}</span>
-                  <span className={s.name}>{label(ing.name)}</span>
-                  {short && (
-                    <span className={s.short}><AlertTriangle size={14} /> tu en as {stock.qty}{stock.unit}</span>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-
-          {missing.length > 0 && (
+          {structured ? (
             <>
-              <p className={s.groupMissing}>À ajouter</p>
+              <p className={s.groupYes}>Dans ton frigo</p>
               <ul className={s.list}>
-                {missing.map((ing, i) => (
-                  <li key={i}>
-                    <span className={s.iconMissing}><Plus size={14} strokeWidth={3} /></span>
-                    <span className={s.amount}>{formatAmount(ing.amount * scale, ing.unit)}</span>
-                    <span className={s.name}>{label(ing.name)}</span>
-                  </li>
-                ))}
+                {have.map((ing, i) => {
+                  const need = ing.amount * scale
+                  const stock = stockFor(ing.name)
+                  // on ne compare que si les unités correspondent (pièces↔pièces, g↔g)
+                  const comparable = stock && ((stock.unit === 'g' && ing.unit === 'g') || (stock.unit === '' && ['', 'large', 'medium', 'small'].includes(ing.unit)))
+                  const short = comparable && stock.qty < need
+                  return (
+                    <li key={i}>
+                      <span className={s.iconYes}><Check size={14} strokeWidth={3} /></span>
+                      <span className={s.amount}>{formatAmount(need, ing.unit)}</span>
+                      <span className={s.name}>{label(ing.name)}</span>
+                      {short && (
+                        <span className={s.short}><AlertTriangle size={14} /> tu en as {stock.qty}{stock.unit}</span>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
+
+              {missing.length > 0 && (
+                <>
+                  <p className={s.groupMissing}>À ajouter</p>
+                  <ul className={s.list}>
+                    {missing.map((ing, i) => (
+                      <li key={i}>
+                        <span className={s.iconMissing}><Plus size={14} strokeWidth={3} /></span>
+                        <span className={s.amount}>{formatAmount(ing.amount * scale, ing.unit)}</span>
+                        <span className={s.name}>{label(ing.name)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </>
+          ) : (
+            // repli : le back ne fournit que les textes bruts
+            <ul className={s.list}>
+              {recipe.required_ingredients.map((txt, i) => <li key={i}>{txt}</li>)}
+            </ul>
           )}
         </section>
 
