@@ -64,8 +64,20 @@ export async function suggestRecipes(
 export async function reclassifyImage(
   itemId: string,
   file: File,
+  selectedIngredient?: string,
 ): Promise<DetectedIngredient> {
   if (USE_MOCKS) {
+    if (selectedIngredient) {
+      return {
+        item_id: Number(itemId),
+        ingredient_name: selectedIngredient,
+        confidence: 1,
+        image_url: null,
+        predictions: { [selectedIngredient]: 1 },
+        is_poisonous: false,
+      }
+    }
+
     const predictions = await mockClassify([])
     const firstPrediction = predictions[0]
 
@@ -91,6 +103,9 @@ export async function reclassifyImage(
   const body = new FormData()
   body.append('image', file)
   const query = new URLSearchParams({ old_prediction_index: itemId })
+  if (selectedIngredient) {
+    query.set('selected_ingredient', selectedIngredient)
+  }
   const res = await fetch(`/api/v1/reclassify?${query}`, {
     method: 'POST',
     body,

@@ -12,7 +12,7 @@ export const SUGGESTIONS: [fr: string, en: string][] = [
 const FR: Record<string, string> = {
   tomato: 'Tomate', egg: 'Œuf', 'bell pepper': 'Poivron', onion: 'Oignon',
   carrot: 'Carotte', lemon: 'Citron', zucchini: 'Courgette', cheese: 'Fromage',
-  apple: 'Pomme', mushroom: 'Champignon',
+  apple: 'Pomme', mushroom: 'Mushroom',
   ...Object.fromEntries(SUGGESTIONS.map(([fr, en]) => [en, fr])),
 }
 

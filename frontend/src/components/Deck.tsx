@@ -9,10 +9,12 @@ type Props = {
   cards: Decision[]
   index: number
   dispatch: Dispatch<FlowAction>
+  onReject: (card: Decision) => void
+  onSelect: (id: string, name: string) => void
   onRetake: (id: string) => void
 }
 
-export function Deck({ cards, index, dispatch, onRetake }: Props) {
+export function Deck({ cards, index, dispatch, onReject, onSelect, onRetake }: Props) {
   const [pos, setPos] = useState(0)
   const n = cards.length
   const i = Math.min(pos, n - 1)
@@ -58,9 +60,9 @@ export function Deck({ cards, index, dispatch, onRetake }: Props) {
                 dispatch({ type: 'decide', id: card.id, decision: d })
                 if (d.status === 'yes' || d.status === 'no') nextPending()
               }}
-              onReject={() => dispatch({ type: 'reject', id: card.id })}
+              onReject={() => onReject(card)}
               onSelect={(name) => {
-                dispatch({ type: 'select', id: card.id, name })
+                onSelect(card.id, name)
                 nextPending()
               }}
               onRetake={() => onRetake(card.id)}
