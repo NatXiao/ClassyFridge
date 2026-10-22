@@ -93,19 +93,28 @@ export function RecipeSheet({ recipe, decisions }: Props) {
             })}
           </ul>
 
-          {missing.length > 0 && (
-            <>
-              <p className={s.groupMissing}>À ajouter</p>
-              <ul className={s.list}>
-                {missing.map((ing, i) => (
-                  <li key={i}>
-                    <span className={s.iconMissing}><Plus size={14} strokeWidth={3} /></span>
-                    <span className={s.amount}>{formatAmount(ing.amount * scale, ing.unit)}</span>
-                    <span className={s.name}>{label(ing.name)}</span>
-                  </li>
-                ))}
-              </ul>
+              {missing.length > 0 && (
+                <>
+                  <p className={s.groupMissing}>À ajouter</p>
+                  <ul className={s.list}>
+                    {missing.map((ing, i) => (
+                      <li key={i}>
+                        <span className={s.iconMissing}><Plus size={14} strokeWidth={3} /></span>
+                        <span className={s.amount}>{formatAmount(ing.amount * scale, ing.unit)}</span>
+                        <span className={s.name}>{label(ing.name)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </>
+          ) : (
+            // repli : pas de détail des quantités, seulement les noms
+            <ul className={s.list}>
+              {[...recipe.available_ingredients, ...recipe.missing_ingredients].map((name, i) => (
+                <li key={i}><span className={s.name}>{label(name)}</span></li>
+              ))}
+            </ul>
           )}
         </section>
 

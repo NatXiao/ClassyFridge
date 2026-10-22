@@ -1,11 +1,14 @@
 import type { Analysis, Recipe } from './client'
 
-type RecipeInput = Omit<Recipe, 'image_url'>
+type RecipeInput = Omit<Recipe, 'available_ingredients' | 'missing_ingredients' | 'image_url'>
 
 const recipe = (r: RecipeInput): Recipe => {
+  const ings = r.required_ingredients
   return {
     ...r,
     image_url: null,
+    available_ingredients: ings.filter((i) => i.available).map((i) => i.name),
+    missing_ingredients: ings.filter((i) => !i.available).map((i) => i.name),
   }
 }
 // Simule la latence réseau, pour voir les états de chargement
@@ -54,7 +57,7 @@ export async function mockRecipes(): Promise<Recipe[]> {
       title: 'Shakshuka express',
       servings: 2,
       preparation_time_minutes: 25,
-      ingredients: [
+      required_ingredients: [
         { name: 'tomato', amount: 3, unit: '', original: '3 tomatoes, diced', available: true },
         { name: 'egg', amount: 4, unit: '', original: '4 eggs', available: true },
         { name: 'bell pepper', amount: 1, unit: '', original: '1 red bell pepper', available: true },
@@ -74,7 +77,7 @@ export async function mockRecipes(): Promise<Recipe[]> {
       title: 'Zucchini & Cheese Omelette',
       servings: 1,
       preparation_time_minutes: 15,
-      ingredients: [
+      required_ingredients: [
         { name: 'egg', amount: 3, unit: '', original: '3 eggs', available: true },
         { name: 'zucchini', amount: 1, unit: '', original: '1 small zucchini, grated', available: true },
         { name: 'cheese', amount: 40, unit: 'g', original: '40 g grated cheese', available: true },
@@ -91,7 +94,7 @@ export async function mockRecipes(): Promise<Recipe[]> {
       title: 'Lemon Roasted Carrots',
       servings: 4,
       preparation_time_minutes: 35,
-      ingredients: [
+      required_ingredients: [
         { name: 'carrot', amount: 6, unit: '', original: '6 carrots, cut into sticks', available: true },
         { name: 'onion', amount: 1, unit: '', original: '1 onion, quartered', available: true },
         { name: 'lemon', amount: 0.5, unit: '', original: '1/2 lemon, juiced', available: true },

@@ -78,6 +78,7 @@
 .shelf {
   container: shelf / inline-size;
   margin-bottom: 28px;
+  container: shelf / inline-size;
 }
 
 .shelf:last-child {
