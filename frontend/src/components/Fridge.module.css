@@ -46,22 +46,6 @@
   border-radius: 6px 6px 18px 18px;
 }
 
-/* Écran étroit : on rogne la carrosserie pour laisser la place au contenu */
-@media (max-width: 600px) {
-  .body {
-    padding: 8px;
-    border-radius: 22px;
-  }
-
-  .freezer {
-    height: 60px;
-  }
-
-  .interior {
-    padding: 12px;
-  }
-}
-
 /* Bac à légumes, en bas (décoratif) */
 .crisper {
   height: 44px;
@@ -129,8 +113,26 @@
   border-radius: 6px;
 }
 
-/* Même arrondi que la carrosserie sur écran étroit */
+
+/* --------------------------------------------------------------------------
+   Écran étroit — carrosserie rognée pour laisser la place au contenu
+   (en fin de fichier pour passer après les règles de base)
+   -------------------------------------------------------------------------- */
+
 @media (max-width: 600px) {
+  .body {
+    padding: 8px;
+    border-radius: 22px;
+  }
+
+  .freezer {
+    height: 60px;
+  }
+
+  .interior {
+    padding: 12px;
+  }
+
   .doorFront,
   .doorBack {
     border-radius: 22px;

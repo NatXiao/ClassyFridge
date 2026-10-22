@@ -76,8 +76,8 @@
 
 /* container-type : la grille s'adapte à la largeur de l'étagère, pas de l'écran */
 .shelf {
-  margin-bottom: 28px;
   container: shelf / inline-size;
+  margin-bottom: 28px;
 }
 
 .shelf:last-child {

@@ -1,9 +1,10 @@
 /* ==========================================================================
    FoodCard — un aliment détecté, posé sur une étagère du frigo
-   Structure : .card > .crop / .row / .qty / .actions
+   Structure : .card > .crop / .row / <QtyInput> / .actions
+   Le compteur de quantité est stylé dans QtyInput.module.css
    ========================================================================== */
 
-/* container-type : les contrôles s'adaptent à la largeur de la carte,
+/* container : les contrôles s'adaptent à la largeur de la carte,
    qui dépend de l'étagère (4 ou 2 colonnes) */
 .card {
   container: card / inline-size;
@@ -66,7 +67,15 @@
   border-radius: 50%;
 }
 
-/* Badge « pas sûr » (confiance < 0.6) en haut à droite */
+/* Initiale à la place du crop pour un aliment ajouté à la main */
+.initial {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 800;
+  color: #B8AE98;
+}
+
+/* Badge « pas sûr » (confiance < 0.6) ou « ajouté », en haut à droite */
 .unsure {
   position: absolute;
   top: 8px;
@@ -115,24 +124,7 @@
 
 
 /* --------------------------------------------------------------------------
-   Quantité — stepper  −  × n  +
-   -------------------------------------------------------------------------- */
-
-.qty button {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 44px;
-  height: 36px;
-  padding: 0;
-  color: var(--ink);
-  background: transparent;
-  border: 0;
-}
-
-
-/* --------------------------------------------------------------------------
-   Actions Oui / Non — boutons bascule (aria-pressed)
+   Actions — Oui / Non (boutons bascule, aria-pressed) ou Retirer
    -------------------------------------------------------------------------- */
 
 .actions {
@@ -176,22 +168,13 @@
   background: var(--no);
 }
 
-/* --------------------------------------------------------------------------
-   Aliment ajouté à la main — initiale à la place du crop, bouton Retirer
-   -------------------------------------------------------------------------- */
-
-.initial {
-  font-family: var(--font-display);
-  font-size: 48px;
-  font-weight: 800;
-  color: #B8AE98;
-}
-
+/* Aliment ajouté à la main : un seul bouton, sur toute la largeur */
 .remove {
   grid-column: 1 / -1;
   color: var(--muted);
   border: 2px solid #C3CFCB;
 }
+
 
 /* --------------------------------------------------------------------------
    Carte étroite — Oui / Non s'empilent pour rester dans la carte
@@ -205,10 +188,6 @@
 
   .actions button {
     min-height: 38px;
-  }
-
-  .qty button {
-    width: 32px;
   }
 
   .unsure {

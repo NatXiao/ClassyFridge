@@ -1,4 +1,8 @@
-/* Stepper  −  [ 53 ] g  +  — même look que l'ancien bloc .qty de FoodCard */
+/* ==========================================================================
+   QtyInput — compteur  −  [ 53 ] g  +
+   Utilisé dans FoodCard et AddIngredient (qui lui ajoute un cadre)
+   ========================================================================== */
+
 .qty {
   display: flex;
   align-items: center;
@@ -9,6 +13,11 @@
   background: #F2F5F3;
   border-radius: 10px;
 }
+
+
+/* --------------------------------------------------------------------------
+   Boutons − / +
+   -------------------------------------------------------------------------- */
 
 .qty button {
   display: grid;
@@ -26,6 +35,11 @@
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+
+/* --------------------------------------------------------------------------
+   Champ — nombre saisissable + unité
+   -------------------------------------------------------------------------- */
 
 .field {
   display: flex;
@@ -52,6 +66,7 @@
   outline: 2px solid var(--ink);
 }
 
+/* Libellé lu par les lecteurs d'écran uniquement */
 .srOnly {
   position: absolute;
   width: 1px;
@@ -61,7 +76,13 @@
   white-space: nowrap;
 }
 
-/* Carte étroite : boutons plus petits */
+
+/* --------------------------------------------------------------------------
+   Dans une carte étroite (container « card » de FoodCard) : boutons resserrés
+   -------------------------------------------------------------------------- */
+
 @container card (max-width: 160px) {
-  .qty button { width: 30px; }
+  .qty button {
+    width: 30px;
+  }
 }

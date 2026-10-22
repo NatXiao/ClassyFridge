@@ -1,4 +1,10 @@
-/* Formulaire d'ajout manuel, posé sous la dernière étagère comme un bac */
+/* ==========================================================================
+   AddIngredient — formulaire d'ajout manuel, posé sous la dernière étagère
+   comme un bac
+   Structure : .form > .title / .field (Aliment + suggestions)
+                      / .small.qtyField (Quantité) / .small (Unité) / .add
+   ========================================================================== */
+
 .form {
   display: flex;
   flex-wrap: wrap;
@@ -11,15 +17,71 @@
   border-radius: 14px;
 }
 
+/* « Il manque quelque chose ? », seul sur sa ligne */
 .title {
   flex-basis: 100%;
   font-size: 18px;
 }
 
-.field,
-.small { flex: 0 1 150px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
 
-/* --- Liste de suggestions, toujours sous le champ --------------------------- */
+/* --------------------------------------------------------------------------
+   Champs — libellé au-dessus, contrôle en dessous
+   -------------------------------------------------------------------------- */
+
+.field,
+.small {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Aliment : prend la place restante */
+.field {
+  flex: 1 1 220px;
+}
+
+/* Unité */
+.small {
+  flex: 0 1 120px;
+}
+
+/* Quantité : le compteur − / + a besoin de plus de place qu'un select */
+.qtyField {
+  flex: 0 1 170px;
+}
+
+/* Champ texte et select : même cadre blanc */
+.combo input,
+.form select {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 12px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid #C3CFCB;
+  border-radius: 10px;
+}
+
+/* Cadre du compteur <QtyInput>, assorti au champ et au select */
+.qtyBox {
+  box-sizing: border-box;
+  min-height: 44px;
+  background: #fff;
+  border: 2px solid #C3CFCB;
+}
+
+.qtyBox:focus-within {
+  border-color: var(--ink);
+}
+
+
+/* --------------------------------------------------------------------------
+   Suggestions — liste déroulante toujours sous le champ Aliment
+   -------------------------------------------------------------------------- */
 
 .combo {
   position: relative;
@@ -56,39 +118,15 @@
   cursor: pointer;
 }
 
+/* Suggestion survolée ou choisie au clavier */
 .optionActive {
   background: #EEF3F1;
 }
 
-.field { flex: 1 1 220px; }
-.small { flex: 0 1 120px; }
 
-/* Le stepper − / + a besoin de plus de place qu'un select */
-.qtyField { flex: 0 1 170px; }
-
-/* Cadre du compteur : même bordure que le champ et le select à côté */
-.qtyBox {
-  box-sizing: border-box;
-  min-height: 44px;
-  background: #fff;
-  border: 2px solid #C3CFCB;
-}
-
-.qtyBox:focus-within {
-  border-color: var(--ink);
-}
-
-.combo input,
-.form select {
-  box-sizing: border-box;
-  min-height: 44px;
-  padding: 0 12px;
-  font: inherit;
-  color: var(--ink);
-  background: #fff;
-  border: 2px solid #C3CFCB;
-  border-radius: 10px;
-}
+/* --------------------------------------------------------------------------
+   Bouton « Ajouter »
+   -------------------------------------------------------------------------- */
 
 .add {
   display: inline-flex;
