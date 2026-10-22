@@ -1,36 +1,24 @@
-import type { Analysis, Recipe } from '../api/client'
+import type { Analysis, Prediction, Recipe } from '../api/client'
 
-export type Decision = { status: 'yes' | 'no' | null; qty: number; unit: Unit; manual?: boolean }
-
-export type FlowState =
-  | { step: 'upload' }
-  | { step: 'review'; analysis: Analysis; decisions: Record<string, Decision> }
-  | { step: 'recipes'; analysis: Analysis; decisions: Record<string, Decision>; recipes: Recipe[] }
-
-export type FlowAction =
-  | { type: 'analyzed'; analysis: Analysis }
-  | { type: 'decide'; name: string; decision: Partial<Decision> }
-  | { type: 'recipesReady'; recipes: Recipe[] }
-  | { type: 'backToReview' }
-  | { type: 'reset' }
-  | { type: 'add'; name: string; qty: number; unit: Unit }
-  | { type: 'remove'; name: string }
+/* --------------------------------------------------------------------------
+   Units (unchanged)
+   -------------------------------------------------------------------------- */
 
 export type Unit = '' | 'g' | 'l' | 'dl' | 'cl'
 
 type UnitInfo = { label: string; short: string; step: number; min: number; initial: number; decimals: boolean }
 
 export const UNITS: Record<Unit, UnitInfo> = {
-  '': { label: 'pièces',      short: 'pc', step: 1,   min: 1,   initial: 1,   decimals: false },
-  g:  { label: 'grammes',     short: 'g',  step: 10,  min: 1,   initial: 100, decimals: false },
+  '': { label: 'pieces',      short: 'pc', step: 1,   min: 1,   initial: 1,   decimals: false },
+  g:  { label: 'grams',       short: 'g',  step: 10,  min: 1,   initial: 100, decimals: false },
   l:  { label: 'litres',      short: 'l',  step: 0.5, min: 0.1, initial: 1,   decimals: true },
-  dl: { label: 'décilitres',  short: 'dl', step: 1,   min: 0.5, initial: 2,   decimals: true },
+  dl: { label: 'decilitres',  short: 'dl', step: 1,   min: 0.5, initial: 2,   decimals: true },
   cl: { label: 'centilitres', short: 'cl', step: 10,  min: 1,   initial: 25,  decimals: false },
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100
 
-// Va au multiple du pas suivant / précédent : 53 g → 60 ou 50, 1,3 l → 1,5 ou 1
+// Next / previous multiple of the step: 53 g → 60 or 50, 1.3 l → 1.5 or 1
 export const stepUp = (qty: number, unit: Unit) => {
   const { step } = UNITS[unit]
   return round2(Math.floor(round2(qty / step)) * step + step)
@@ -41,60 +29,175 @@ export const stepDown = (qty: number, unit: Unit) => {
   return Math.max(min, round2(Math.ceil(round2(qty / step)) * step - step))
 }
 
-// Affichage à la française : 1.5 → "1,5"
+// French-style display: 1.5 → "1,5"
 export const formatQty = (qty: number) => String(round2(qty)).replace('.', ',')
 
+/* --------------------------------------------------------------------------
+   Decisions: one per card = one per crop (or per manual item)
+   -------------------------------------------------------------------------- */
+
+export const MAX_GUESSES = 5
+
+export type Decision = {
+  id: string
+  group: string                // deck the card sits in (label detected first)
+  name: string                 // label currently shown
+  status: 'yes' | 'no' | null
+  qty: number                  // 1 per detected card, free for manual items
+  unit: Unit
+  crop?: string
+  candidates: Prediction[]     // model guesses, best first
+  attempt: number              // index of the guess currently shown
+  exhausted: boolean           // every guess rejected: Select / Retake photo
+  edible?: boolean | null      // mushrooms: false = poisonous, locked to "no"
+  classifying?: boolean        // retake photo waiting in the classifier queue
+  error?: string
+  manual?: boolean
+}
+
+export const isLocked = (d: Decision) => d.edible === false
+
+export type FlowState =
+  | { step: 'upload' }
+  | { step: 'review'; analysis: Analysis; decisions: Record<string, Decision> }
+  | { step: 'recipes'; analysis: Analysis; decisions: Record<string, Decision>; recipes: Recipe[] }
+
+export type FlowAction =
+  | { type: 'analyzed'; analysis: Analysis }
+  | { type: 'decide'; id: string; decision: Partial<Pick<Decision, 'status' | 'qty' | 'unit'>> }
+  | { type: 'reject'; id: string }
+  | { type: 'confirmAll'; group: string }
+  | { type: 'select'; id: string; name: string }
+  | { type: 'retake'; id: string; crop: string }
+  | { type: 'classified'; id: string; candidates: Prediction[]; edible?: boolean | null }
+  | { type: 'classifyFailed'; id: string; error: string }
+  | { type: 'add'; name: string; qty: number; unit: Unit }
+  | { type: 'remove'; id: string }
+  | { type: 'recipesReady'; recipes: Recipe[] }
+  | { type: 'backToReview' }
+  | { type: 'reset' }
+
+// Confirmed items merged by name + unit: sent to the recipe API and shown on screen 3
+export function confirmedStock(decisions: Record<string, Decision>) {
+  const totals = new Map<string, { name: string; qty: number; unit: Unit }>()
+  for (const d of Object.values(decisions)) {
+    if (d.status !== 'yes') continue
+    const key = `${d.name}|${d.unit}`
+    const total = totals.get(key) ?? { name: d.name, qty: 0, unit: d.unit }
+    total.qty += d.qty
+    totals.set(key, total)
+  }
+  return [...totals.values()]
+}
+
+/* --------------------------------------------------------------------------
+   Reducer
+   -------------------------------------------------------------------------- */
+
+type Review = Extract<FlowState, { step: 'review' }>
+
+const put = (state: Review, d: Decision): Review => ({
+  ...state,
+  decisions: { ...state.decisions, [d.id]: d },
+})
+
 export function flowReducer(state: FlowState, action: FlowAction): FlowState {
+  if (action.type === 'analyzed') {
+    const decisions: Record<string, Decision> = {}
+    for (const item of action.analysis.items) {
+      const id = String(item.item_id)
+      decisions[id] = {
+        id,
+        group: item.ingredient_name,
+        name: item.ingredient_name,
+        status: item.edible === false ? 'no' : null,
+        qty: 1,
+        unit: '',
+        crop: item.image_url ?? undefined,
+        candidates: (item.predictions ?? []).slice(0, MAX_GUESSES),
+        attempt: 0,
+        exhausted: false,
+        edible: item.edible ?? null,
+      }
+    }
+    return { step: 'review', analysis: action.analysis, decisions }
+  }
+  if (action.type === 'reset') return { step: 'upload' }
+  if (action.type === 'backToReview') {
+    return state.step === 'recipes'
+      ? { step: 'review', analysis: state.analysis, decisions: state.decisions }
+      : state
+  }
+  if (state.step !== 'review') return state // late answers from the queue are ignored
+
   switch (action.type) {
-    case 'analyzed':
-      return {
-        step: 'review',
-        analysis: action.analysis,
-        decisions: Object.fromEntries(
-          action.analysis.ingredients.map((i) => [
-            i.ingredient_name,
-            { status: null, qty: i.instance_count, unit: '' as Unit },
-          ]),
-        ),
+    case 'decide': {
+      const d = state.decisions[action.id]
+      if (!d || (isLocked(d) && action.decision.status !== undefined)) return state
+      return put(state, { ...d, ...action.decision })
+    }
+    case 'reject': {
+      const d = state.decisions[action.id]
+      if (!d || isLocked(d) || d.classifying) return state
+      const next = d.attempt + 1
+      if (next < d.candidates.length) {
+        return put(state, { ...d, name: d.candidates[next].ingredient_name, attempt: next, status: null })
       }
-    case 'decide':
-      if (state.step !== 'review') return state
-      return {
-        ...state,
-        decisions: {
-          ...state.decisions,
-          [action.name]: { ...state.decisions[action.name], ...action.decision },
-        },
+      return put(state, { ...d, attempt: next, exhausted: true, status: null })
+    }
+    case 'confirmAll': {
+      let next = state
+      for (const d of Object.values(state.decisions)) {
+        const untouched = d.status === null && d.attempt === 0 && !d.exhausted && !d.classifying && !isLocked(d)
+        if (d.group === action.group && untouched) next = put(next, { ...d, status: 'yes' })
       }
-    case 'recipesReady':
-      if (state.step !== 'review') return state
-      return { ...state, step: 'recipes', recipes: action.recipes }
-    case 'backToReview':
-      if (state.step !== 'recipes') return state
-      return { step: 'review', analysis: state.analysis, decisions: state.decisions }
+      return next
+    }
+    case 'select': {
+      const d = state.decisions[action.id]
+      return d ? put(state, { ...d, name: action.name, status: 'yes', exhausted: false, error: undefined }) : state
+    }
+    case 'retake': {
+      const d = state.decisions[action.id]
+      return d
+        ? put(state, { ...d, crop: action.crop, classifying: true, exhausted: false, status: null, error: undefined })
+        : state
+    }
+    case 'classified': {
+      const d = state.decisions[action.id]
+      if (!d) return state
+      const candidates = action.candidates.slice(0, MAX_GUESSES)
+      if (candidates.length === 0) {
+        return put(state, { ...d, classifying: false, exhausted: true, error: 'The model could not recognise this photo.' })
+      }
+      return put(state, {
+        ...d,
+        classifying: false,
+        candidates,
+        attempt: 0,
+        name: candidates[0].ingredient_name,
+        edible: action.edible ?? null,
+        status: action.edible === false ? 'no' : null,
+      })
+    }
+    case 'classifyFailed': {
+      const d = state.decisions[action.id]
+      return d ? put(state, { ...d, classifying: false, exhausted: true, error: action.error }) : state
+    }
     case 'add': {
-      if (state.step !== 'review') return state
-      const existing = state.decisions[action.name]
-      return {
-        ...state,
-        decisions: {
-          ...state.decisions,
-          [action.name]: {
-            status: 'yes',
-            qty: action.qty,
-            unit: action.unit,
-            manual: existing ? existing.manual : true,
-          },
-        },
-      }
+      const id = `manual:${action.name}`
+      return put(state, {
+        id, group: id, name: action.name, status: 'yes', qty: action.qty, unit: action.unit,
+        candidates: [], attempt: 0, exhausted: false, manual: true,
+      })
     }
     case 'remove': {
-      if (state.step !== 'review' || !state.decisions[action.name]?.manual) return state
+      if (!state.decisions[action.id]?.manual) return state
       const decisions = { ...state.decisions }
-      delete decisions[action.name]
+      delete decisions[action.id]
       return { ...state, decisions }
     }
-    case 'reset':
-      return { step: 'upload' }
+    case 'recipesReady':
+      return { ...state, step: 'recipes', recipes: action.recipes }
   }
 }

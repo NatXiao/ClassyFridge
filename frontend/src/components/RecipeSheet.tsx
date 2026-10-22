@@ -3,7 +3,7 @@ import { Check, Plus, Minus, Clock, Users, AlertTriangle } from 'lucide-react'
 import type { Recipe } from '../api/client'
 import { label } from '../api/labels'
 import { formatAmount, toBase } from '../api/format'
-import { UNITS, formatQty, type Decision } from '../state/flow'
+import { UNITS, confirmedStock, formatQty, type Decision } from '../state/flow'
 import s from './RecipeSheet.module.css'
 
 type Props = { recipe: Recipe; decisions: Record<string, Decision> }
@@ -14,10 +14,8 @@ export function RecipeSheet({ recipe, decisions }: Props) {
   const scale = base ? portions / base : 1
 
   // "eggs" ou "cheddar cheese" côté Spoonacular ↔ "egg" ou "cheddar" côté stock
-  const stockFor = (name: string) => {
-    const key = Object.keys(decisions).find((k) => decisions[k].status === 'yes' && name.toLowerCase().includes(k))
-    return key ? decisions[key] : undefined
-  }
+  const stockFor = (name: string) =>
+    confirmedStock(decisions).find((d) => name.toLowerCase().includes(d.name.toLowerCase()))
 
   const have = recipe.ingredients.filter((ingredient) => ingredient.available)
   const missing = recipe.ingredients.filter((ingredient) => !ingredient.available)
