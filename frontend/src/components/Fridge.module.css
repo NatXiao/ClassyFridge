@@ -112,3 +112,29 @@
   border-bottom: 5px solid var(--fridge-border);
   border-radius: 6px;
 }
+
+
+/* --------------------------------------------------------------------------
+   Écran étroit — carrosserie rognée pour laisser la place au contenu
+   (en fin de fichier pour passer après les règles de base)
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  .body {
+    padding: 8px;
+    border-radius: 22px;
+  }
+
+  .freezer {
+    height: 60px;
+  }
+
+  .interior {
+    padding: 12px;
+  }
+
+  .doorFront,
+  .doorBack {
+    border-radius: 22px;
+  }
+}

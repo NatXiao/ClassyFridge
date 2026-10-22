@@ -7,8 +7,9 @@
 /* Zone de charnière : porte la perspective de la rotation */
 .hingeArea {
   display: flex;
-  flex: 0 1 340px;
-  min-width: 260px;
+  /* flex-grow 1 : quand elle passe sous le frigo, la porte prend toute la largeur */
+  flex: 1 1 300px;
+  min-width: min(260px, 100%);
   perspective: 2400px;
 }
 
