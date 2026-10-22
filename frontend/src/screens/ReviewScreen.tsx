@@ -15,7 +15,7 @@ type Props = {
   dispatch: Dispatch<FlowAction>
 }
 
-const SHELF_SIZE = 5
+const SHELF_SIZE = 4
 
 export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
   // Une carte par ingrédient, avec le crop de sa première instance

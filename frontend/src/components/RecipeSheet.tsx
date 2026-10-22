@@ -12,7 +12,7 @@ export function RecipeSheet({ recipe, decisions }: Props) {
   const base = recipe.servings ?? null
   const [portions, setPortions] = useState(base ?? 2)
   const scale = base ? portions / base : 1
-  const structured = (recipe.ingredients?.length ?? 0) > 0
+  const structured = recipe.required_ingredients.length > 0
 
   // "eggs" ou "cheddar cheese" côté Spoonacular ↔ "egg" ou "cheddar" côté stock
   const stockFor = (name: string) => {
@@ -20,8 +20,8 @@ export function RecipeSheet({ recipe, decisions }: Props) {
     return key ? decisions[key] : undefined
   }
 
-  const have = recipe.ingredients?.filter((i) => i.available) ?? []
-  const missing = recipe.ingredients?.filter((i) => !i.available) ?? []
+  const have = recipe.required_ingredients.filter((i) => i.available)
+  const missing = recipe.required_ingredients.filter((i) => !i.available)
 
   return (
     <article className={s.sheet}>
@@ -89,9 +89,11 @@ export function RecipeSheet({ recipe, decisions }: Props) {
               )}
             </>
           ) : (
-            // repli : le back ne fournit que les textes bruts
+            // repli : pas de détail des quantités, seulement les noms
             <ul className={s.list}>
-              {recipe.required_ingredients.map((txt, i) => <li key={i}>{txt}</li>)}
+              {[...recipe.available_ingredients, ...recipe.missing_ingredients].map((name, i) => (
+                <li key={i}><span className={s.name}>{label(name)}</span></li>
+              ))}
             </ul>
           )}
         </section>
