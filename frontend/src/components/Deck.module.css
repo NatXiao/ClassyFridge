@@ -1,0 +1,78 @@
+/* A pile of crops of the same food — like a deck of trading cards */
+.slot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  list-style: none;
+}
+
+.stack {
+  position: relative;
+  padding: 10px 10px 0 0; /* room for the cards peeking out behind */
+}
+
+.front {
+  position: relative;
+  z-index: 2;
+}
+
+.layer {
+  position: absolute;
+  inset: 10px 10px 0 0;
+  background: #fff;
+  border: 2px solid #E2DCC8;
+  border-radius: 16px;
+}
+
+.layer1 { z-index: 1; transform: translate(5px, -5px) rotate(2deg); }
+.layer2 { z-index: 0; transform: translate(10px, -10px) rotate(4deg); }
+
+/* ×4 badge: the count given by the model */
+.count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  min-width: 28px;
+  padding: 3px 8px;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.nav button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--ink);
+  background: #F2F5F3;
+  border: 0;
+  border-radius: 50%;
+}
+
+.all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  font-weight: 700;
+  color: var(--yes);
+  background: #fff;
+  border: 2px solid var(--yes);
+  border-radius: 10px;
+}

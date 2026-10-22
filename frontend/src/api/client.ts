@@ -1,6 +1,6 @@
 import createClient from 'openapi-fetch'
 import type { paths, components } from './schema'
-import { mockAnalysis, mockRecipes } from './mocks'
+import { mockAnalysis, mockClassify, mockRecipes } from './mocks'
 
 export const api = createClient<paths>({ baseUrl: '/' })
 
@@ -46,7 +46,7 @@ export async function suggestRecipes(
 
 // Retake photo: the picture goes straight to the classifier
 export async function classifyImage(file: File): Promise<Classification> {
-  if (USE_MOCKS) return mockClassify()
+  if (USE_MOCKS) return { predictions: await mockClassify([]) }
   const body = new FormData()
   body.append('image', file)
   const res = await fetch('/api/v1/classifications', { method: 'POST', body })

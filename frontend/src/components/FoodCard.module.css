@@ -175,6 +175,117 @@
   border: 2px solid #C3CFCB;
 }
 
+/* --------------------------------------------------------------------------
+   Every guess rejected — Select / Retake photo
+   -------------------------------------------------------------------------- */
+
+.exhausted { border: 2px solid var(--accent); }
+
+.picker { display: flex; flex-direction: column; gap: 6px; }
+
+.choice,
+.back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+.choice { color: #fff; background: var(--ink); border: 0; }
+.back { color: var(--muted); background: transparent; border: 0; text-decoration: underline; }
+
+.choices { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+
+.choices button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--ink);
+  background: #F2F5F3;
+  border: 2px solid transparent;
+  border-radius: 8px;
+}
+
+.choices button:hover,
+.choices button:focus-visible { border-color: var(--yes); }
+
+.percent { font-size: 12px; color: var(--muted); }
+
+/* Dropdown with every class of the model — no typos possible */
+.other { display: block; }
+
+.other select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid #C3CFCB;
+  border-radius: 8px;
+}
+
+.error { margin: 0; font-size: 12px; font-weight: 600; color: var(--no); }
+
+/* --- Retake photo waiting in the queue ------------------------------------ */
+
+.busy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: rgb(24 34 43 / 0.6);
+}
+
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- Mushrooms ------------------------------------------------------------ */
+
+.poisonous { border: 2px solid var(--no); }
+
+.actions button:disabled { cursor: not-allowed; }
+.yes:disabled { opacity: 0.35; }
+.no:disabled[aria-pressed='true'] { opacity: 1; }
+
+.edible,
+.toxic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.edible { grid-column: 1; color: var(--yes); }
+.toxic { grid-column: 2; color: var(--no); }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 
 /* --------------------------------------------------------------------------
    Carte étroite — Oui / Non s'empilent pour rester dans la carte
