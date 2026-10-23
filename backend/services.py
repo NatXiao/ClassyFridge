@@ -37,24 +37,21 @@ def analyze_image(image: bytes) -> AnalysisResponse:
 
     # classify each cropped image
 
-    predictions = recognize_food_batch(cropped_images, batch_size=len(cropped_images), top_k=4)
+    predictions = recognize_food_batch(cropped_images, batch_size=len(cropped_images), top_k=5)
     detected_ingredients = [
         DetectedIngredient(
             item_id=index,
             ingredient_name=preds[0]["label"],
             confidence=preds[0]["confidence"],
             image_url=image_to_data_url(crop),
+            predictions={p["label"]: p["confidence"] for p in preds},
         )
         for index, (crop, preds) in enumerate(zip(cropped_images, predictions))
     ]
 
-
-    # TODO see how we could parallelize this step
     # TODO for mushroom results, use our CNN model to classify edible vs poisonous mushrooms
     # TODO return the result in an AnalysisResponse schema
 
-    # test with only the segmentation and cropping step for now
-    # assume all cropped images are mushrooms
 
     ingredient_counts = {}
     for ingredient in detected_ingredients:

@@ -10,6 +10,7 @@ class DetectedIngredient(BaseModel):
     ingredient_name: str
     image_url: str | None = None
     confidence: float = Field(ge=0, le=1)
+    predictions: dict
 
 
 class IngredientCount(BaseModel):
