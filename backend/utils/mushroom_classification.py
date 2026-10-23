@@ -8,6 +8,7 @@ import numpy
 import torch
 
 
+from backend.utils.handle_images import load_image
 from mushroom_classifier.mnn import MushroomNeuralNetwork
 from mushroom_classifier.mnn import transform_image
 from mushroom_classifier.mnn import device
@@ -27,24 +28,12 @@ def get_model() -> MushroomNeuralNetwork:
 
     return model
 
-    
-def _load_image(source):
-    if isinstance(source, Image.Image):
-        image = source
-    elif isinstance(source, (bytes, bytearray)):
-        image = Image.open(io.BytesIO(source))
-    elif isinstance(source, numpy.ndarray):
-        image = Image.fromarray(source)
-    else:
-        image = Image.open(source) 
-    return image.convert("RGB")
-
 
 def is_poisonous(image) -> bool:
 
     model = get_model()
     
-    image = _load_image(image)
+    image = load_image(image)
     image = transform_image(image).unsqueeze(0)
 
     with torch.no_grad():

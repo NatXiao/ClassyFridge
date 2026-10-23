@@ -48,6 +48,92 @@ def transform_image(image):
     return image_to_tensor(image)
 
 
+def train(dataloader, model, loss_fn, optimizer) -> float:
+
+    num_batches = len(dataloader)
+    model.train()
+    train_loss = 0
+
+    for batch, (X, y) in enumerate(dataloader):
+        print(f"Loading : {int(batch * 100 / num_batches)}%", end="\r")
+        X, y = X.to(device), y.to(device)
+
+        pred = model(X)
+        loss = loss_fn(pred, y.long())
+
+        train_loss += loss.item()
+
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+
+    train_loss /= num_batches
+    print(f"Train avg loss: {train_loss:>4f}")
+    logs.append(f"Train avg loss: {train_loss:>4f}")
+    logs.append("\n")
+
+    return train_loss
+
+
+def test(dataloader, model, loss_fn, optimizer) -> float:
+        
+    num_batches = len(dataloader)
+    model.eval()
+    test_loss = 0
+
+    TP, TN, FP, FN = 0, 0, 0, 0
+
+    with torch.no_grad():
+        for batch, (X, y) in enumerate(dataloader):
+            print(f"Loading : {int(batch * 100 / num_batches)}%", end="\r")
+            X, y = X.to(device), y.to(device)
+
+            pred = model(X)
+            loss = loss_fn(pred, y.long())
+
+            test_loss += loss.item()
+
+            pred_class = pred.argmax(1)
+
+            actual_positive = (y == 1)
+            actual_negative = (y == 0)
+            pred_positive = (pred_class == 1)
+            pred_negative = (pred_class == 0)
+
+            TP += (pred_positive & actual_positive).type(torch.float).sum().item()
+            TN += (pred_negative & actual_negative).type(torch.float).sum().item()
+            FP += (pred_positive & actual_negative).type(torch.float).sum().item()
+            FN += (pred_negative & actual_positive).type(torch.float).sum().item()
+
+    test_loss /= num_batches
+
+    accuracy = (TP + TN) / (TP + TN + FP + FN)
+    precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
+    recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
+    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+
+
+    print(f"Test avg loss  : {test_loss:>8f}")
+    print(f"Accuracy  : {(100*accuracy):>0.1f}%")
+    print(f"Precision : {(precision):>0.3f}")
+    print(f"Recall    : {(recall):>0.3f}")
+    print(f"F1 score  : {(f1_score):>0.3f}")
+    print("")
+
+    logs.append(f"Test avg loss  : {test_loss:>8f}")
+    logs.append("\n")
+    logs.append(f"Accuracy  : {(100*accuracy):>0.1f}%")
+    logs.append("\n")
+    logs.append(f"Precision : {(precision):>0.3f}")
+    logs.append("\n")
+    logs.append(f"Recall    : {(recall):>0.3f}")
+    logs.append("\n")
+    logs.append(f"F1 score  : {(f1_score):>0.3f}")
+    logs.append("\n\n")
+
+    return test_loss
+
+
 class MushroomDataset(Dataset):
     def __init__(self, img_path, metadata_path, subset=-1):
 
@@ -132,7 +218,6 @@ if __name__ == "__main__":
 
     weights = torch.tensor(LOSS_WEIGHTS).to(device)
     loss_fn = nn.CrossEntropyLoss(weight=weights)
-    # loss_fn = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
 
     best_test_loss = None
@@ -141,97 +226,6 @@ if __name__ == "__main__":
 
     logs.append(optimizer)
     logs.append("\n\n")
-
-    def train(dataloader, model, loss_fn, optimizer) -> float:
-        size = len(dataloader.dataset)
-        num_batches = len(dataloader)
-        model.train()
-        train_loss = 0
-
-        for batch, (X, y) in enumerate(dataloader):
-            print(f"Loading : {int(batch * 100 / num_batches)}%", end="\r")
-            X, y = X.to(device), y.to(device)
-
-            pred = model(X)
-            loss = loss_fn(pred, y.long())
-
-            train_loss += loss.item()
-
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-
-            # if batch % 100 == 0:
-            loss, current = loss.item(), (batch + 1) * len(X)
-            # print(f"loss: {loss:>2f}  [{current:>2d}/{size:>2d}]")
-
-        train_loss /= num_batches
-        print(f"Train avg loss: {train_loss:>4f}")
-        logs.append(f"Train avg loss: {train_loss:>4f}")
-        logs.append("\n")
-
-        return train_loss
-
-
-    def test(dataloader, model, loss_fn, optimizer) -> float:
-            size = len(dataloader.dataset)
-            num_batches = len(dataloader)
-            model.eval()
-            test_loss = 0
-
-            TP, TN, FP, FN = 0, 0, 0, 0
-
-            with torch.no_grad():
-                for batch, (X, y) in enumerate(dataloader):
-                    print(f"Loading : {int(batch * 100 / num_batches)}%", end="\r")
-                    X, y = X.to(device), y.to(device)
-        
-                    pred = model(X)
-                    loss = loss_fn(pred, y.long())
-
-                    test_loss += loss.item()
-
-                    pred_class = pred.argmax(1)
-
-                    actual_positive = (y == 1)
-                    actual_negative = (y == 0)
-                    pred_positive = (pred_class == 1)
-                    pred_negative = (pred_class == 0)
-
-                    TP += (pred_positive & actual_positive).type(torch.float).sum().item()
-                    TN += (pred_negative & actual_negative).type(torch.float).sum().item()
-                    FP += (pred_positive & actual_negative).type(torch.float).sum().item()
-                    FN += (pred_negative & actual_positive).type(torch.float).sum().item()
-
-            test_loss /= num_batches
-            # TP /= size
-
-            accuracy = (TP + TN) / (TP + TN + FP + FN)
-            precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
-            recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
-            f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
-
-
-            print(f"Test avg loss  : {test_loss:>8f}")
-            print(f"Accuracy  : {(100*accuracy):>0.1f}%")
-            print(f"Precision : {(precision):>0.3f}")
-            print(f"Recall    : {(recall):>0.3f}")
-            print(f"F1 score  : {(f1_score):>0.3f}")
-            print("")
-
-            logs.append(f"Test avg loss  : {test_loss:>8f}")
-            logs.append("\n")
-            logs.append(f"Accuracy  : {(100*accuracy):>0.1f}%")
-            logs.append("\n")
-            logs.append(f"Precision : {(precision):>0.3f}")
-            logs.append("\n")
-            logs.append(f"Recall    : {(recall):>0.3f}")
-            logs.append("\n")
-            logs.append(f"F1 score  : {(f1_score):>0.3f}")
-            logs.append("\n\n")
-    
-            return test_loss
-
         
 
     train_data = MushroomDataset(img_path="./mushroom_classifier/FungiTastic/FungiTastic-Mini/train/300p/", metadata_path="./mushroom_classifier/FungiTastic/metadata/FungiTastic-Mini/FungiTastic-Mini-Train_augmented.csv", subset=-1)

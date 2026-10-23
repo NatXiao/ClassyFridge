@@ -1,5 +1,7 @@
 import base64
+import io
 
+from PIL import Image
 import cv2
 import numpy as np
 
@@ -59,3 +61,16 @@ def image_to_data_url(image: np.ndarray) -> str:
     encoded = base64.b64encode(image_bytes).decode("ascii")
 
     return f"data:image/jpeg;base64,{encoded}"
+
+
+# Load image from source and ronvert it in RGB format
+def load_image(source):
+    if isinstance(source, Image.Image):
+        image = source
+    elif isinstance(source, (bytes, bytearray)):
+        image = Image.open(io.BytesIO(source))
+    elif isinstance(source, np.ndarray):
+        image = Image.fromarray(source)
+    else:
+        image = Image.open(source) 
+    return image.convert("RGB")
