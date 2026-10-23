@@ -3,6 +3,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from backend import services
 from backend.schemas import (
     AnalysisResponse,
+    DetectedIngredient,
     HealthResponse,
     RecipeRequest,
     RecipeResponse,
@@ -46,7 +47,7 @@ async def create_analysis(
 async def reclassify_food( 
     old_prediction_index,
     image: UploadFile = File(...),
-) -> AnalysisResponse:
+) -> DetectedIngredient:
     content = await _read_image(image)
     return services.reclassify_food(
         old_prediction_index,
