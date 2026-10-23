@@ -1,4 +1,9 @@
-import type { Analysis, Prediction, Recipe } from '../api/client'
+import {
+  predictionMapToList,
+  type Analysis,
+  type Prediction,
+  type Recipe,
+} from '../api/client'
 
 /* --------------------------------------------------------------------------
    Units (unchanged)
@@ -111,7 +116,7 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
         qty: 1,
         unit: '',
         crop: item.image_url ?? undefined,
-        candidates: (item.predictions ?? []).slice(0, MAX_GUESSES),
+        candidates: predictionMapToList(item.predictions).slice(0, MAX_GUESSES),
         attempt: 0,
         exhausted: false,
       }

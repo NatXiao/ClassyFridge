@@ -5,9 +5,14 @@ import { mockAnalysis, mockClassify, mockRecipes } from './mocks'
 export const api = createClient<paths>({ baseUrl: '/' })
 
 export type Analysis = components['schemas']['AnalysisResponse']
+export type DetectedIngredient = components['schemas']['DetectedIngredient']
 export type IngredientCount = components['schemas']['IngredientCount']
 export type Recipe = components['schemas']['Recipe']
 export type RecipeIngredient = components['schemas']['RecipeIngredient']
+export type Prediction = {
+  ingredient_name: string
+  confidence: number
+}
 export type RecipeOptions = {
   max_missing_ingredients: number
   min_used_ingredients: number
@@ -21,6 +26,17 @@ export const DEFAULT_RECIPE_OPTIONS: RecipeOptions = {
 }
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
+
+export function predictionMapToList(
+  predictions: Record<string, number>,
+): Prediction[] {
+  return Object.entries(predictions).map(
+    ([ingredient_name, confidence]) => ({
+      ingredient_name,
+      confidence,
+    }),
+  )
+}
 
 // Upload en multipart : un fetch simple est plus lisible qu'openapi-fetch ici
 export async function analyzeImage(file: File): Promise<Analysis> {
@@ -44,12 +60,42 @@ export async function suggestRecipes(
   return data.recipes
 }
 
-// Retake photo: the picture goes straight to the classifier
-export async function classifyImage(file: File): Promise<Classification> {
-  if (USE_MOCKS) return { predictions: await mockClassify([]) }
+// Retake photo: reclassify one existing detection without segmenting it again.
+export async function reclassifyImage(
+  itemId: string,
+  file: File,
+): Promise<DetectedIngredient> {
+  if (USE_MOCKS) {
+    const predictions = await mockClassify([])
+    const firstPrediction = predictions[0]
+
+    if (!firstPrediction) {
+      throw new Error('The model returned no predictions.')
+    }
+
+    return {
+      item_id: Number(itemId),
+      ingredient_name: firstPrediction.ingredient_name,
+      confidence: firstPrediction.confidence,
+      image_url: null,
+      predictions: Object.fromEntries(
+        predictions.map(({ ingredient_name, confidence }) => [
+          ingredient_name,
+          confidence,
+        ]),
+      ),
+      is_poisonous: false,
+    }
+  }
+
   const body = new FormData()
   body.append('image', file)
-  const res = await fetch('/api/v1/classifications', { method: 'POST', body })
+  const query = new URLSearchParams({ old_prediction_index: itemId })
+  const res = await fetch(`/api/v1/reclassify?${query}`, {
+    method: 'POST',
+    body,
+  })
+
   if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText)
   return res.json()
 }

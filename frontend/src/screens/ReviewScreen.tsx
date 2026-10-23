@@ -3,8 +3,9 @@ import { useMutation } from '@tanstack/react-query'
 import { ArrowDown } from 'lucide-react'
 
 import {
-  classifyImage,
   DEFAULT_RECIPE_OPTIONS,
+  predictionMapToList,
+  reclassifyImage,
   suggestRecipes,
   type Analysis,
   type RecipeOptions,
@@ -125,12 +126,12 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
       crop: URL.createObjectURL(file),
     })
 
-    enqueue(() => classifyImage(file))
+    enqueue(() => reclassifyImage(id, file))
       .then((response) => {
         dispatch({
           type: 'classified',
           id,
-          candidates: response.predictions,
+          candidates: predictionMapToList(response.predictions),
         })
       })
       .catch((error: Error) => {

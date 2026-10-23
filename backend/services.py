@@ -6,10 +6,8 @@ routes prevents the HTTP layer from depending on a specific model or API.
 
 from backend.schemas import (
     AnalysisResponse,
-    ClassificationResponse,
     DetectedIngredient,
     IngredientCount,
-    Prediction,
     RecipeRequest,
     RecipeResponse,
 )
@@ -43,7 +41,9 @@ def analyze_image(image: bytes) -> AnalysisResponse:
 
     # classify each cropped image
 
-    predictions = recognize_food_batch(cropped_images, batch_size=len(cropped_images), top_k=5)
+    predictions = recognize_food_batch(
+        cropped_images, batch_size=len(cropped_images), top_k=5
+    )
     detected_ingredients = [
         DetectedIngredient(
             item_id=index,
@@ -75,16 +75,22 @@ def analyze_image(image: bytes) -> AnalysisResponse:
     return analysis_response
 
 
-def reclassify_food(old_detection_id : int, new_image: bytes):
-    prediction = recognize_food(new_image)  
+def reclassify_food(old_detection_id: int, new_image: bytes) -> DetectedIngredient:
+    decoded_image = decode_image(new_image)
+    predictions = recognize_food(decoded_image)
+
     return DetectedIngredient(
         item_id=old_detection_id,
-        ingredient_name=prediction[0]["label"],
-        confidence=prediction[0]["confidence"],
-        image_url=image_to_data_url(new_image),
-        predictions=prediction,
-        is_poisonous=is_not_edible(prediction[0]["label"], new_image),
+        ingredient_name=predictions[0]["label"],
+        confidence=predictions[0]["confidence"],
+        image_url=image_to_data_url(decoded_image),
+        predictions={
+            prediction["label"]: prediction["confidence"]
+            for prediction in predictions
+        },
+        is_poisonous=is_not_edible(predictions[0]["label"], decoded_image),
     )
+
 
 def suggest_recipes(request: RecipeRequest) -> RecipeResponse:
     """Call the existing recipe API and map its output to the response schema."""

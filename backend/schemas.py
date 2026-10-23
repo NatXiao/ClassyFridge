@@ -15,7 +15,7 @@ class DetectedIngredient(BaseModel):
     ingredient_name: str
     image_url: str | None = None
     confidence: float = Field(ge=0, le=1)
-    predictions: dict
+    predictions: dict[str, float]
     is_poisonous: bool
 
 

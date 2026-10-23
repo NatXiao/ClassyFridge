@@ -34,7 +34,13 @@ export async function mockAnalysis(): Promise<Analysis> {
         item_id: nextId++,
         ingredient_name: name,
         confidence,
-        predictions: guessesFor(name, confidence),
+        is_poisonous: false,
+        predictions: Object.fromEntries(
+          guessesFor(name, confidence).map((prediction) => [
+            prediction.ingredient_name,
+            prediction.confidence,
+          ]),
+        ),
     })),
   )
 

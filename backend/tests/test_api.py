@@ -19,8 +19,8 @@ def test_openapi_contains_all_routes() -> None:
     assert set(paths) == {
         "/api/v1/health",
         "/api/v1/analyses",
+        "/api/v1/reclassify",
         "/api/v1/recipes/suggestions",
-        "/api/v1/classifications",
     }
 
 
@@ -64,7 +64,10 @@ def test_recipe_suggestion_route(monkeypatch) -> None:
         json={
             "ingredients": [
                 {"ingredient_name": "tomato", "instance_count": 2},
-            ]
+            ],
+            "max_missing_ingredients": 6,
+            "min_used_ingredients": 2,
+            "limit": 3,
         },
     )
     assert response.status_code == 200

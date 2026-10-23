@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reclassify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reclassify Food */
+        post: operations["reclassify_food_api_v1_reclassify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/recipes/suggestions": {
         parameters: {
             query?: never;
@@ -49,23 +66,6 @@ export interface paths {
         put?: never;
         /** Recipe Suggestions */
         post: operations["recipe_suggestions_api_v1_recipes_suggestions_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/classifications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create Classification */
-        post: operations["create_classification_api_v1_classifications_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -88,15 +88,10 @@ export interface components {
             /** Image */
             image: string;
         };
-        /** Body_create_classification_api_v1_classifications_post */
-        Body_create_classification_api_v1_classifications_post: {
+        /** Body_reclassify_food_api_v1_reclassify_post */
+        Body_reclassify_food_api_v1_reclassify_post: {
             /** Image */
             image: string;
-        };
-        /** ClassificationResponse */
-        ClassificationResponse: {
-            /** Predictions */
-            predictions: components["schemas"]["Prediction"][];
         };
         /** DetectedIngredient */
         DetectedIngredient: {
@@ -109,7 +104,11 @@ export interface components {
             /** Confidence */
             confidence: number;
             /** Predictions */
-            predictions?: components["schemas"]["Prediction"][];
+            predictions: {
+                [key: string]: number;
+            };
+            /** Is Poisonous */
+            is_poisonous: boolean;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -130,13 +129,6 @@ export interface components {
             ingredient_name: string;
             /** Instance Count */
             instance_count: number;
-        };
-        /** Prediction */
-        Prediction: {
-            /** Ingredient Name */
-            ingredient_name: string;
-            /** Confidence */
-            confidence: number;
         };
         /** Recipe */
         Recipe: {
@@ -261,6 +253,41 @@ export interface operations {
             };
         };
     };
+    reclassify_food_api_v1_reclassify_post: {
+        parameters: {
+            query: {
+                old_prediction_index: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_reclassify_food_api_v1_reclassify_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetectedIngredient"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     recipe_suggestions_api_v1_recipes_suggestions_post: {
         parameters: {
             query?: never;
@@ -281,39 +308,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RecipeResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_classification_api_v1_classifications_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["Body_create_classification_api_v1_classifications_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClassificationResponse"];
                 };
             };
             /** @description Validation Error */
