@@ -16,8 +16,10 @@ const FR: Record<string, string> = {
   ...Object.fromEntries(SUGGESTIONS.map(([fr, en]) => [en, fr])),
 }
 
-export const label = (name: string) =>
-  FR[name] ?? name.charAt(0).toUpperCase() + name.slice(1)
+export const label = (name: string) => {
+  const text = name.replace(/_/g, ' ')
+  return FR[name] ?? text.charAt(0).toUpperCase() + text.slice(1)
+}
 
 // "Poulet" → "chicken breast", "Tomate" → "tomato" ; un nom inconnu part tel quel
 export function toEnglish(input: string) {

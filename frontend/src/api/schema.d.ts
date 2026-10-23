@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reclassify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reclassify Food */
+        post: operations["reclassify_food_api_v1_reclassify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/recipes/suggestions": {
         parameters: {
             query?: never;
@@ -71,6 +88,11 @@ export interface components {
             /** Image */
             image: string;
         };
+        /** Body_reclassify_food_api_v1_reclassify_post */
+        Body_reclassify_food_api_v1_reclassify_post: {
+            /** Image */
+            image: string;
+        };
         /** DetectedIngredient */
         DetectedIngredient: {
             /** Item Id */
@@ -81,6 +103,12 @@ export interface components {
             image_url?: string | null;
             /** Confidence */
             confidence: number;
+            /** Predictions */
+            predictions: {
+                [key: string]: number;
+            };
+            /** Is Poisonous */
+            is_poisonous: boolean;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -212,6 +240,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalysisResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reclassify_food_api_v1_reclassify_post: {
+        parameters: {
+            query: {
+                old_prediction_index: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_reclassify_food_api_v1_reclassify_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetectedIngredient"];
                 };
             };
             /** @description Validation Error */

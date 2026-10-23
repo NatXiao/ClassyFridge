@@ -44,14 +44,14 @@ async def create_analysis(
     response_model=DetectedIngredient,
     tags=["analyses"],
 )
-async def reclassify_food( 
-    old_prediction_index,
+async def reclassify_food(
+    old_prediction_index: int,
     image: UploadFile = File(...),
 ) -> DetectedIngredient:
     content = await _read_image(image)
     return services.reclassify_food(
         old_prediction_index,
-        content
+        content,
     )
 
 

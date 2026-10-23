@@ -1,18 +1,26 @@
 import { useState, type Dispatch } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { Door } from '../components/Door'
 import { ArrowDown } from 'lucide-react'
+
 import {
   DEFAULT_RECIPE_OPTIONS,
+  predictionMapToList,
+  reclassifyImage,
   suggestRecipes,
   type Analysis,
   type RecipeOptions,
 } from '../api/client'
-import { label, cropSrc } from '../api/labels'
-import type { Decision, FlowAction } from '../state/flow'
-import { Fridge } from '../components/Fridge'
-import { FoodCard } from '../components/FoodCard'
+import { enqueue } from '../api/queue'
 import { AddIngredient } from '../components/AddIngredient'
+import { Deck } from '../components/Deck'
+import { Door } from '../components/Door'
+import { Fridge } from '../components/Fridge'
+import { RetakeDialog } from '../components/RetakeDialog'
+import {
+  confirmedStock,
+  type Decision,
+  type FlowAction,
+} from '../state/flow'
 import s from './ReviewScreen.module.css'
 
 type Props = {
@@ -22,9 +30,12 @@ type Props = {
 }
 
 const SHELF_SIZE = 4
+
 type RecipeOptionInputs = Record<keyof RecipeOptions, string>
 
-export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
+export function ReviewScreen({ decisions, dispatch }: Props) {
+  const [retakeId, setRetakeId] = useState<string | null>(null)
+
   const [recipeOptionInputs, setRecipeOptionInputs] =
     useState<RecipeOptionInputs>({
       max_missing_ingredients: String(
@@ -71,153 +82,281 @@ export function ReviewScreen({ analysis, decisions, dispatch }: Props) {
     && recipeOptions.limit <= 20
   )
 
-  // One card per detected ingredient, using its first cropped image.
-  const detected = analysis.ingredients.map((ing) => {
-    const items = analysis.items.filter(
-      (item) => item.ingredient_name === ing.ingredient_name,
-    )
+  // Crops of the same detected ingredient are displayed as one deck.
+  // Manually added ingredients each get their own deck.
+  const decks = new Map<string, Decision[]>()
 
-    return {
-      name: ing.ingredient_name,
-      crop: cropSrc(items[0]),
-      unsure: Math.min(...items.map((item) => item.confidence)) < 0.6,
-      manual: false,
-    }
-  })
-  // Puis les aliments ajoutés à la main, dans l'ordre d'ajout
-  const added = Object.entries(decisions)
-    .filter(([, d]) => d.manual)
-    .map(([name]) => ({ name, crop: undefined, unsure: false, manual: true }))
-  const cards = [...detected, ...added]
-  const shelves = Array.from({ length: Math.ceil(cards.length / SHELF_SIZE) }, (_, i) =>
-    cards.slice(i * SHELF_SIZE, (i + 1) * SHELF_SIZE),
+  for (const decision of Object.values(decisions)) {
+    decks.set(decision.group, [
+      ...(decks.get(decision.group) ?? []),
+      decision,
+    ])
+  }
+
+  for (const cards of decks.values()) {
+    cards.sort(
+      (first, second) =>
+        (first.pilePriority ?? 0) - (second.pilePriority ?? 0),
+    )
+  }
+
+  const slots = [...decks.values()]
+
+  const shelves = Array.from(
+    { length: Math.ceil(slots.length / SHELF_SIZE) },
+    (_, index) =>
+      slots.slice(
+        index * SHELF_SIZE,
+        (index + 1) * SHELF_SIZE,
+      ),
   )
 
-  const all = Object.values(decisions)
-  const yes = all.filter((d) => d.status === 'yes').length
-  const no = all.filter((d) => d.status === 'no').length
-  const pending = all.length - yes - no
-  const canContinue = pending === 0 && yes > 0
+  const allDecisions = Object.values(decisions)
+  const confirmed = allDecisions.filter(
+    (decision) => decision.status === 'yes',
+  ).length
+  const discarded = allDecisions.filter(
+    (decision) => decision.status === 'no',
+  ).length
+  const pending = allDecisions.length - confirmed - discarded
+  const waiting = allDecisions.filter(
+    (decision) => decision.classifying,
+  ).length
+
+  const canContinue = pending === 0 && confirmed > 0
+
+  // Show the replacement picture immediately and classify it in the queue.
+  const retake = (id: string, file: File) => {
+    dispatch({
+      type: 'retake',
+      id,
+      crop: URL.createObjectURL(file),
+    })
+
+    enqueue(() => reclassifyImage(id, file))
+      .then((response) => {
+        dispatch({
+          type: 'classified',
+          id,
+          candidates: predictionMapToList(response.predictions),
+        })
+      })
+      .catch((error: Error) => {
+        dispatch({
+          type: 'classifyFailed',
+          id,
+          error: error.message,
+        })
+      })
+  }
 
   const recipes = useMutation({
     mutationFn: () =>
       suggestRecipes(
-        Object.entries(decisions)
-          .filter(([, d]) => d.status === 'yes')
-          .map(([ingredient_name, d]) => ({
-            ingredient_name,
-            instance_count: Math.max(1, Math.round(d.qty)),
-          })),
+        confirmedStock(decisions).map((decision) => ({
+          ingredient_name: decision.name,
+          instance_count: Math.max(
+            1,
+            Math.round(decision.qty),
+          ),
+        })),
         recipeOptions,
       ),
-    onSuccess: (result) => dispatch({ type: 'recipesReady', recipes: result }),
+    onSuccess: (result) => {
+      dispatch({
+        type: 'recipesReady',
+        recipes: result,
+      })
+    },
   })
 
   return (
     <main className={s.layout}>
       <div className={s.intro}>
-        <p className={s.kicker}>Étape 2 sur 3</p>
-        <h1 className={s.title}>Voilà ce qu'on a rangé.</h1>
-        <p className={s.lead}>Vérifie chaque aliment et corrige la quantité si besoin. Ce que tu refuses ne sera pas utilisé pour les recettes.</p>
+        <p className={s.kicker}>Step 2 of 3</p>
+        <h1 className={s.title}>Here&apos;s what we put away.</h1>
+        <p className={s.lead}>
+          Check every item. Say no and we&apos;ll suggest the next
+          guess. Anything you discard won&apos;t be used for recipes.
+        </p>
       </div>
 
       <div className={s.split}>
         <div className={s.fridge}>
           <Fridge door={false}>
-            {shelves.map((shelf, si) => (
-              <div key={si} className={s.shelf}>
+            {shelves.map((shelf, shelfIndex) => (
+              <div key={shelfIndex} className={s.shelf}>
                 <ul className={s.grid}>
-                  {shelf.map((c, ci) => (
-                    <FoodCard
-                      key={c.name}
-                      label={label(c.name)}
-                      crop={c.crop}
-                      unsure={c.unsure}
-                      decision={decisions[c.name]}
-                      index={si * SHELF_SIZE + ci}
-                      onDecide={(d) => dispatch({ type: 'decide', name: c.name, decision: d })}
-                      manual={c.manual}
-                      onRemove={() => dispatch({ type: 'remove', name: c.name })}
+                  {shelf.map((cards, cardIndex) => (
+                    <Deck
+                      key={`${cards[0].group}:${cards[0].id}`}
+                      cards={cards}
+                      index={
+                        shelfIndex * SHELF_SIZE + cardIndex
+                      }
+                      dispatch={dispatch}
+                      onRetake={setRetakeId}
                     />
                   ))}
                 </ul>
+
                 <div className={s.glass} aria-hidden="true" />
               </div>
             ))}
-            <AddIngredient onAdd={(name, qty, unit) => dispatch({ type: 'add', name, qty, unit })} />
+
+            <AddIngredient
+              onAdd={(name, qty, unit) => {
+                dispatch({
+                  type: 'add',
+                  name,
+                  qty,
+                  unit,
+                })
+              }}
+            />
           </Fridge>
         </div>
 
         <Door>
-          <aside aria-label="Récapitulatif" className={s.recap}>
-            <h2 className={s.recapTitle}>Récap</h2>
-            <p className={s.stat}><span>Validés</span><strong className={s.yes}>{yes}</strong></p>
-            <p className={s.stat}><span>Refusés</span><strong className={s.no}>{no}</strong></p>
-            <p className={s.stat}><span>À vérifier</span><strong>{pending}</strong></p>
+          <aside aria-label="Summary" className={s.recap}>
+            <h2 className={s.recapTitle}>Summary</h2>
+
+            <p className={s.stat}>
+              <span>Confirmed</span>
+              <strong className={s.yes}>{confirmed}</strong>
+            </p>
+
+            <p className={s.stat}>
+              <span>Discarded</span>
+              <strong className={s.no}>{discarded}</strong>
+            </p>
+
+            <p className={s.stat}>
+              <span>To check</span>
+              <strong>{pending}</strong>
+            </p>
 
             <div className={s.recipeOptions}>
               <h3>Recipe preferences</h3>
+
               <label>
-                <span>Maximum missing ingredients</span>
+                <span>Maximum missing</span>
                 <input
                   type="number"
                   min="0"
                   max="20"
-                  value={recipeOptionInputs.max_missing_ingredients}
-                  onChange={(event) => updateRecipeOption(
-                    'max_missing_ingredients', event.target.value,
-                  )}
+                  value={
+                    recipeOptionInputs.max_missing_ingredients
+                  }
+                  onChange={(event) => {
+                    updateRecipeOption(
+                      'max_missing_ingredients',
+                      event.target.value,
+                    )
+                  }}
                 />
               </label>
+
               <label>
-                <span>Minimum of your ingredients used</span>
+                <span>Minimum used</span>
                 <input
                   type="number"
                   min="1"
                   max="20"
-                  value={recipeOptionInputs.min_used_ingredients}
-                  onChange={(event) => updateRecipeOption(
-                    'min_used_ingredients', event.target.value,
-                  )}
+                  value={
+                    recipeOptionInputs.min_used_ingredients
+                  }
+                  onChange={(event) => {
+                    updateRecipeOption(
+                      'min_used_ingredients',
+                      event.target.value,
+                    )
+                  }}
                 />
               </label>
+
               <label>
-                <span>Number of recipes</span>
+                <span>Recipe limit</span>
                 <input
                   type="number"
                   min="1"
                   max="20"
                   value={recipeOptionInputs.limit}
-                  onChange={(event) => updateRecipeOption(
-                    'limit', event.target.value,
-                  )}
+                  onChange={(event) => {
+                    updateRecipeOption(
+                      'limit',
+                      event.target.value,
+                    )
+                  }}
                 />
               </label>
             </div>
 
             <div className={s.ctaZone}>
-              <button type="button" className={s.cta} disabled={!canContinue || !recipeOptionsAreValid || recipes.isPending} onClick={() => recipes.mutate()}>
+              <button
+                type="button"
+                className={s.cta}
+                disabled={
+                  !canContinue
+                  || !recipeOptionsAreValid
+                  || recipes.isPending
+                }
+                onClick={() => recipes.mutate()}
+              >
                 {recipes.isPending
-                  ? 'Finding recipes…'
-                  : recipeOptionsAreValid
-                    ? `See ${recipeOptions.limit} recipe${recipeOptions.limit !== 1 ? 's' : ''}`
-                    : 'Enter valid preferences'}{' '}
+                  ? 'Searching…'
+                  : `See ${recipeOptions.limit} recipe${
+                    recipeOptions.limit !== 1 ? 's' : ''
+                  }`}
+
                 <ArrowDown size={18} />
               </button>
+
               {!canContinue && (
                 <p className={s.hint}>
-                  {pending > 0 ? `Encore ${pending} aliment${pending > 1 ? 's' : ''} à vérifier` : 'Valide au moins un aliment'}
+                  {waiting > 0
+                    ? `Waiting for the model (${waiting})…`
+                    : pending > 0
+                      ? `${pending} item${
+                        pending > 1 ? 's' : ''
+                      } left to check`
+                      : 'Confirm at least one item'}
                 </p>
               )}
-              {canContinue && !recipeOptionsAreValid && (
-                <p className={s.hint}>Enter values within the displayed ranges.</p>
+
+              {!recipeOptionsAreValid && (
+                <p className={s.hint}>
+                  Enter valid recipe preferences.
+                </p>
               )}
-              {recipes.isError && <p className={s.error}>{recipes.error.message}</p>}
-              <button type="button" className={s.link} onClick={() => dispatch({ type: 'reset' })}>Changer de photo</button>
+
+              {recipes.isError && (
+                <p className={s.error}>
+                  {recipes.error.message}
+                </p>
+              )}
+
+              <button
+                type="button"
+                className={s.link}
+                onClick={() => dispatch({ type: 'reset' })}
+              >
+                Change photo
+              </button>
             </div>
           </aside>
         </Door>
       </div>
+
+      <RetakeDialog
+        open={retakeId !== null}
+        onClose={() => setRetakeId(null)}
+        onFile={(file) => {
+          if (retakeId !== null) {
+            retake(retakeId, file)
+          }
+        }}
+      />
     </main>
   )
 }

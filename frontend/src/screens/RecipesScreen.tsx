@@ -2,7 +2,7 @@ import { useState, type Dispatch } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import type { Recipe } from '../api/client'
 import { label } from '../api/labels'
-import type { Decision, FlowAction } from '../state/flow'
+import { confirmedStock, type Decision, type FlowAction } from '../state/flow'
 import s from './RecipesScreen.module.css'
 import { RecipeSheet } from '../components/RecipeSheet'
 
@@ -15,7 +15,7 @@ type Props = {
 export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
   const [selected, setSelected] = useState(0)
   const [failedThumbnailIds, setFailedThumbnailIds] = useState<Set<string>>(new Set())
-  const pantry = Object.entries(decisions).filter(([, d]) => d.status === 'yes')
+  const pantry = confirmedStock(decisions)
   const recipe = recipes[selected]
 
   return (
@@ -27,13 +27,13 @@ export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
 
       <section className={s.table} aria-label="La table">
         <ul className={s.pantry} aria-label="Aliments validés">
-          {pantry.map(([name, d], i) => (
-            <motion.li key={name} className={s.chip}
+          {pantry.map((item, i) => (
+            <motion.li key={`${item.name}|${item.unit}`} className={s.chip}
               initial={{ opacity: 0, y: -160 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 + i * 0.06, type: 'spring', stiffness: 220, damping: 20 }}>
               <span className={s.chipDot} aria-hidden="true" />
-              {label(name)} <span className={s.muted}>×{d.qty}</span>
+              {label(item.name)} <span className={s.muted}>×{item.qty}</span>
             </motion.li>
           ))}
         </ul>
