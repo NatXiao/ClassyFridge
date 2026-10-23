@@ -38,6 +38,21 @@ async def create_analysis(
         content,
     )
 
+@router.post(
+    "/classify",
+    response_model=AnalysisResponse,
+    tags=["analyses"],
+)
+async def reclassify_food( 
+    old_prediction_index,
+    image: UploadFile = File(...),
+) -> AnalysisResponse:
+    content = await _read_image(image)
+    return services.reclassify_food(
+        old_prediction_index,
+        content
+    )
+
 
 @router.post(
     "/recipes/suggestions",

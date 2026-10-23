@@ -12,7 +12,11 @@ from backend.schemas import (
     RecipeResponse,
 )
 from backend.utils.fastSam import segment_and_crop
-from backend.utils.food_classification import is_not_edible, recognize_food_batch
+from backend.utils.food_classification import (
+    is_not_edible,
+    recognize_food,
+    recognize_food_batch,
+)
 from backend.utils.handle_images import decode_image, image_to_data_url
 from backend.utils.recipes import get_recipe_suggestions
 
@@ -44,15 +48,13 @@ def analyze_image(image: bytes) -> AnalysisResponse:
             ingredient_name=preds[0]["label"],
             confidence=preds[0]["confidence"],
             image_url=image_to_data_url(crop),
-            predictions={p["label"]: p["confidence"] for p in preds},
+            predictions=preds,
             is_poisonous=is_not_edible(preds[0]["label"], crop),
         )
         for index, (crop, preds) in enumerate(zip(cropped_images, predictions))
     ]
 
-    # TODO for mushroom results, use our CNN model to classify edible vs poisonous mushrooms
     # TODO return the result in an AnalysisResponse schema
-
 
     ingredient_counts = {}
     for ingredient in detected_ingredients:
@@ -72,6 +74,17 @@ def analyze_image(image: bytes) -> AnalysisResponse:
 
     return analysis_response
 
+
+def reclassify_food(old_detection_id : int, new_image: bytes):
+    prediction = recognize_food(new_image)  
+    return DetectedIngredient(
+        item_id=old_detection_id,
+        ingredient_name=prediction[0]["label"],
+        confidence=prediction[0]["confidence"],
+        image_url=image_to_data_url(new_image),
+        predictions=prediction,
+        is_poisonous=is_not_edible(prediction[0]["label"], new_image),
+    )
 
 def suggest_recipes(request: RecipeRequest) -> RecipeResponse:
     """Call the existing recipe API and map its output to the response schema."""
