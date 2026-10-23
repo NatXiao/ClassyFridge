@@ -45,10 +45,11 @@
 
 /* Unité */
 .small {
-  flex: 0 1 120px;
+  flex: 0 1 170px;
+  min-width: 0;
 }
 
-/* Quantité : le compteur − / + a besoin de plus de place qu'un select */
+/* Quantité et unité gardent la même largeur. */
 .qtyField {
   flex: 0 1 170px;
 }
@@ -57,13 +58,20 @@
 .combo input,
 .form select {
   box-sizing: border-box;
-  min-height: 44px;
+  width: 100%;
+  height: 44px;
   padding: 0 12px;
   font: inherit;
   color: var(--ink);
   background: #fff;
   border: 2px solid #C3CFCB;
-  border-radius: 10px;
+  border-radius: 14px;
+}
+
+.combo input:focus,
+.form select:focus {
+  border-color: var(--ink);
+  outline: none;
 }
 
 /* Cadre du compteur <QtyInput>, assorti au champ et au select */
