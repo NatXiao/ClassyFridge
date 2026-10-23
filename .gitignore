@@ -24,3 +24,7 @@ training_data/
 
 # macOS files
 .DS_Store
+
+# Mushroom data and result
+mushroom_classifier/FungiTastic
+mushroom_classifier/result

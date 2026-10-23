@@ -1,17 +1,22 @@
-import io
 import json
+import os
 import random
 from functools import lru_cache
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy
 import torch
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
-from PIL import Image
 from torchvision import transforms
 from torchvision.models import resnet50
+import torch
+from torchvision import transforms
+
+import matplotlib.pyplot as plt
+
+from backend.utils.handle_images import load_image
+from backend.utils.mushroom_classification import is_poisonous
 
 DEBUGGING = True
 MODELS_PATH = "models"
@@ -77,21 +82,10 @@ def _build_model(state_dict, total_classes):
     model.load_state_dict(state_dict)
     return model.eval()
 
-def _load_image(source):
-    if isinstance(source, Image.Image):
-        image = source
-    elif isinstance(source, (bytes, bytearray)):
-        image = Image.open(io.BytesIO(source))
-    elif isinstance(source, numpy.ndarray):
-        image = Image.fromarray(source)
-    else:
-        image = Image.open(source) 
-    return image.convert("RGB")
-
 def recognize_food(image_source, top_k=5):
     class_names, total_classes = classes_names()
     model = get_finetuned_model(total_classes) or get_basic_model(total_classes)
-    image = _load_image(image_source)
+    image = load_image(image_source)
     if DEBUGGING:
         plt.figure(figsize=(6, 6))
         plt.imshow(image)
@@ -117,8 +111,10 @@ def recognize_food_batch( images, batch_size = 4, top_k=5):
     results = []
     for start in range(0, len(images), batch_size):
         chunk = images[start:start + batch_size]
-        pil_images = [_load_image(img) for img in chunk]
+        pil_images = [load_image(img) for img in chunk]
         if DEBUGGING:
+            if not os.path.exists(f"{DEBUGGING_DIR}"):
+                os.makedirs(f"{DEBUGGING_DIR}")
             for offset, pil in enumerate(pil_images):
                 pil.save(f"{DEBUGGING_DIR}/crop_{start + offset}.png")
         batch = torch.stack([preprocess(pil) for pil in pil_images])
@@ -132,3 +128,11 @@ def recognize_food_batch( images, batch_size = 4, top_k=5):
         for row_scores, row_indices in zip(scores, indices)
         )
     return results
+
+
+def is_not_edible(label, image):
+
+    if label != "mushroom":
+        return False
+
+    return is_poisonous(image)
