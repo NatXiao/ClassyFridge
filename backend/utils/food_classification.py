@@ -10,10 +10,6 @@ from datasets import load_dataset
 from huggingface_hub import hf_hub_download
 from torchvision import transforms
 from torchvision.models import resnet50
-import torch
-from torchvision import transforms
-
-import matplotlib.pyplot as plt
 
 from backend.utils.handle_images import load_image
 from backend.utils.mushroom_classification import is_poisonous
