@@ -1,26 +1,22 @@
-import io
 import json
+import os
 import random
 from functools import lru_cache
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy
 import torch
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
-from PIL import Image
 from torchvision import transforms
 from torchvision.models import resnet50
 import torch
 from torchvision import transforms
-from PIL import Image
-
-import cv2
 
 import matplotlib.pyplot as plt
 
 from backend.utils.handle_images import load_image
+from backend.utils.mushroom_classification import is_poisonous
 
 DEBUGGING = True
 MODELS_PATH = "models"
@@ -117,6 +113,8 @@ def recognize_food_batch( images, batch_size = 4, top_k=5):
         chunk = images[start:start + batch_size]
         pil_images = [load_image(img) for img in chunk]
         if DEBUGGING:
+            if not os.path.exists(f"{DEBUGGING_DIR}"):
+                os.makedirs(f"{DEBUGGING_DIR}")
             for offset, pil in enumerate(pil_images):
                 pil.save(f"{DEBUGGING_DIR}/crop_{start + offset}.png")
         batch = torch.stack([preprocess(pil) for pil in pil_images])
@@ -130,3 +128,11 @@ def recognize_food_batch( images, batch_size = 4, top_k=5):
         for row_scores, row_indices in zip(scores, indices)
         )
     return results
+
+
+def is_not_edible(label, image):
+
+    if label != "mushroom":
+        return False
+
+    return is_poisonous(image)

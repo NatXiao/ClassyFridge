@@ -12,9 +12,8 @@ from backend.schemas import (
     RecipeResponse,
 )
 from backend.utils.fastSam import segment_and_crop
-from backend.utils.food_classification import recognize_food_batch
+from backend.utils.food_classification import is_not_edible, recognize_food_batch
 from backend.utils.handle_images import decode_image, image_to_data_url
-from backend.utils.mushroom_classification import is_poisonous
 from backend.utils.recipes import get_recipe_suggestions
 
 
@@ -46,6 +45,7 @@ def analyze_image(image: bytes) -> AnalysisResponse:
             confidence=preds[0]["confidence"],
             image_url=image_to_data_url(crop),
             predictions={p["label"]: p["confidence"] for p in preds},
+            is_poisonous=is_not_edible(preds[0]["label"], crop),
         )
         for index, (crop, preds) in enumerate(zip(cropped_images, predictions))
     ]

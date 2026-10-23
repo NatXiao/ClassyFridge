@@ -1,14 +1,9 @@
-
-
-import io
-from pathlib import Path
-
-from PIL import Image
-import numpy
 import torch
 
+from pathlib import Path
 
 from backend.utils.handle_images import load_image
+
 from mushroom_classifier.mnn import MushroomNeuralNetwork
 from mushroom_classifier.mnn import transform_image
 from mushroom_classifier.mnn import device
