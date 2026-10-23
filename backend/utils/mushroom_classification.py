@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import torch
 
 from pathlib import Path
@@ -12,7 +14,7 @@ from mushroom_classifier.mnn import device
 MODELS_PATH = "models"
 MODEL_PATH = Path(f"./{MODELS_PATH}/mushroom.pth")
 
-
+@lru_cache(maxsize=1)
 def get_model() -> MushroomNeuralNetwork:
 
     weights = torch.load(MODEL_PATH, weights_only=True, map_location=device)
