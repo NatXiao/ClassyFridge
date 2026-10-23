@@ -93,6 +93,13 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
     ])
   }
 
+  for (const cards of decks.values()) {
+    cards.sort(
+      (first, second) =>
+        (first.pilePriority ?? 0) - (second.pilePriority ?? 0),
+    )
+  }
+
   const slots = [...decks.values()]
 
   const shelves = Array.from(
@@ -182,7 +189,7 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
                 <ul className={s.grid}>
                   {shelf.map((cards, cardIndex) => (
                     <Deck
-                      key={cards[0].group}
+                      key={`${cards[0].group}:${cards[0].id}`}
                       cards={cards}
                       index={
                         shelfIndex * SHELF_SIZE + cardIndex

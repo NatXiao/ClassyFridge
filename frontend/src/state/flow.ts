@@ -54,6 +54,7 @@ export type Decision = {
   candidates: Prediction[]     // model guesses, best first
   attempt: number              // index of the guess currently shown
   exhausted: boolean           // every guess rejected: Select / Retake photo
+  pilePriority?: number        // lower values are shown first in a pile
   classifying?: boolean        // retake photo waiting in the classifier queue
   error?: string
   manual?: boolean
@@ -171,12 +172,21 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
       if (candidates.length === 0) {
         return put(state, { ...d, classifying: false, exhausted: true, error: 'The model could not recognise this photo.' })
       }
+      const pilePriority = Math.min(
+        0,
+        ...Object.values(state.decisions).map(
+          (decision) => decision.pilePriority ?? 0,
+        ),
+      ) - 1
+
       return put(state, {
         ...d,
         classifying: false,
         candidates,
         attempt: 0,
+        group: candidates[0].ingredient_name,
         name: candidates[0].ingredient_name,
+        pilePriority,
         status: null,
       })
     }

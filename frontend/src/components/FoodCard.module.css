@@ -8,9 +8,11 @@
    qui dépend de l'étagère (4 ou 2 colonnes) */
 .card {
   container: card / inline-size;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  height: 380px;
   min-width: 0;
   padding: 10px;
   list-style: none;
@@ -42,6 +44,7 @@
 .crop {
   position: relative;
   display: grid;
+  flex: 0 0 auto;
   place-items: center;
   aspect-ratio: 1;
   overflow: hidden;
@@ -131,6 +134,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+  margin-top: auto;
 }
 
 .actions button {
@@ -175,15 +179,27 @@
   border: 2px solid #C3CFCB;
 }
 
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
 /* --------------------------------------------------------------------------
    Every guess rejected — Select / Retake photo
    -------------------------------------------------------------------------- */
 
 .exhausted { border: 2px solid var(--accent); }
 
-.picker { display: flex; flex-direction: column; gap: 6px; }
+.picker {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+}
 
 .choice,
+.discardChoice,
 .back {
   display: flex;
   align-items: center;
@@ -195,6 +211,8 @@
 }
 
 .choice { color: #fff; background: var(--ink); border: 0; }
+.discardChoice { color: var(--no); background: #fff; border: 2px solid var(--no); }
+.discardChoice[aria-pressed='true'] { color: #fff; background: var(--no); }
 .back { color: var(--muted); background: transparent; border: 0; text-decoration: underline; }
 
 .choices { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }

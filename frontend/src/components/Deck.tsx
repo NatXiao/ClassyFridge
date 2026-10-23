@@ -56,7 +56,7 @@ export function Deck({ cards, index, dispatch, onRetake }: Props) {
               card={card}
               onDecide={(d) => {
                 dispatch({ type: 'decide', id: card.id, decision: d })
-                if (d.status === 'yes') nextPending()
+                if (d.status === 'yes' || d.status === 'no') nextPending()
               }}
               onReject={() => dispatch({ type: 'reject', id: card.id })}
               onSelect={(name) => {
@@ -70,7 +70,7 @@ export function Deck({ cards, index, dispatch, onRetake }: Props) {
         </AnimatePresence>
       </div>
 
-      {n > 1 && (
+      {n > 1 ? (
         <div className={s.nav}>
           <button type="button" aria-label="Previous card" onClick={() => setPos((i - 1 + n) % n)}>
             <ChevronLeft size={18} />
@@ -80,11 +80,16 @@ export function Deck({ cards, index, dispatch, onRetake }: Props) {
             <ChevronRight size={18} />
           </button>
         </div>
+      ) : (
+        <div className={s.navPlaceholder} aria-hidden="true" />
       )}
-      {untouched.length > 1 && (
+
+      {untouched.length > 1 ? (
         <button type="button" className={s.all} onClick={() => dispatch({ type: 'confirmAll', group: card.group })}>
           <CheckCheck size={16} /> Yes to all {untouched.length}
         </button>
+      ) : (
+        <div className={s.allPlaceholder} aria-hidden="true" />
       )}
     </motion.li>
   )

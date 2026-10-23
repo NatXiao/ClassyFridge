@@ -64,6 +64,10 @@
   border-radius: 50%;
 }
 
+.navPlaceholder {
+  height: 36px;
+}
+
 .all {
   display: flex;
   align-items: center;
@@ -75,4 +79,8 @@
   background: #fff;
   border: 2px solid var(--yes);
   border-radius: 10px;
+}
+
+.allPlaceholder {
+  min-height: 40px;
 }

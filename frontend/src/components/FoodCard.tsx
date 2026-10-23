@@ -22,6 +22,7 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
   const [selecting, setSelecting] = useState(false)
   const name = label(card.name)
   const current = candidates[attempt]
+  const needsManualChoice = exhausted && status !== 'no'
 
   const pick = (value: string) => {
     onSelect(value)
@@ -29,7 +30,7 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
   }
 
   return (
-    <article className={`${s.card} ${s[`status_${status}`]} ${exhausted ? s.exhausted : ''}`}>
+    <article className={`${s.card} ${s[`status_${status}`]} ${needsManualChoice ? s.exhausted : ''}`}>
       {/* --- image + badges --- */}
       <div className={s.crop}>
         {card.crop
@@ -51,9 +52,9 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
 
       {/* --- name + status --- */}
       <div className={s.row}>
-        <span className={s.name} aria-live="polite">{exhausted ? 'None of these?' : name}</span>
+        <span className={s.name} aria-live="polite">{needsManualChoice ? 'None of these?' : name}</span>
         <span className={s.statusText}>
-          {manual ? 'Added' : exhausted ? 'Your call' : STATUS_TEXT[`${status}`]}
+          {manual ? 'Added' : needsManualChoice ? 'Your call' : STATUS_TEXT[`${status}`]}
         </span>
       </div>
 
@@ -65,7 +66,7 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
             <button type="button" className={s.remove} onClick={onRemove}><Trash2 size={16} /> Remove</button>
           </div>
         </>
-      ) : classifying ? null : exhausted && selecting ? (
+      ) : classifying ? null : needsManualChoice && selecting ? (
         <div className={s.picker}>
           <ul className={s.choices} aria-label="Model guesses">
             {candidates.map((c) => (
@@ -88,7 +89,7 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
           </label>
           <button type="button" className={s.back} onClick={() => setSelecting(false)}>Back</button>
         </div>
-      ) : exhausted ? (
+      ) : needsManualChoice ? (
         <div className={s.picker}>
           {card.error && <p className={s.error} role="alert">{card.error}</p>}
           <button type="button" className={s.choice} onClick={() => setSelecting(true)}>
@@ -97,6 +98,24 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
           <button type="button" className={s.choice} onClick={onRetake}>
             <Camera size={16} /> Retake photo
           </button>
+          <button
+            type="button"
+            className={s.discardChoice}
+            onClick={() => onDecide({ status: 'no' })}
+          >
+            <Trash2 size={16} /> Discard item
+          </button>
+        </div>
+      ) : exhausted && status === 'no' ? (
+        <div className={s.actions}>
+          <button
+            type="button"
+            className={`${s.no} ${s.fullWidth}`}
+            aria-pressed="true"
+            onClick={() => onDecide({ status: null })}
+          >
+            <X size={16} strokeWidth={3} /> Undo discard
+          </button>
         </div>
       ) : (
         <div className={s.actions}>
@@ -104,8 +123,21 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
             onClick={() => onDecide({ status: status === 'yes' ? null : 'yes' })}>
             <Check size={16} strokeWidth={3} /> Yes
           </button>
-          <button type="button" className={s.no} aria-pressed={status === 'no'} onClick={onReject}>
+          <button
+            type="button"
+            className={s.no}
+            aria-pressed={status === 'no'}
+            onClick={onReject}
+          >
             <X size={16} strokeWidth={3} /> No
+          </button>
+          <button
+            type="button"
+            className={`${s.discardChoice} ${s.fullWidth}`}
+            aria-pressed={status === 'no'}
+            onClick={() => onDecide({ status: status === 'no' ? null : 'no' })}
+          >
+            <Trash2 size={16} /> {status === 'no' ? 'Undo discard' : 'Discard item'}
           </button>
         </div>
       )}
