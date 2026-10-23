@@ -31,6 +31,11 @@ type Props = {
 
 const SHELF_SIZE = 4
 
+const isMushroom = (name: string) => {
+  const normalized = name.trim().toLowerCase()
+  return normalized === 'mushroom' || normalized === 'mushrooms'
+}
+
 type RecipeOptionInputs = Record<keyof RecipeOptions, string>
 
 export function ReviewScreen({ decisions, dispatch }: Props) {
@@ -125,6 +130,84 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
 
   const canContinue = pending === 0 && confirmed > 0
 
+  const classifySelectedMushroom = (
+    id: string,
+    name: string,
+    confirm: boolean,
+  ) => {
+    const decision = decisions[id]
+    const crop = decision?.crop
+
+    dispatch({
+      type: 'mushroomClassificationStarted',
+      id,
+      name,
+    })
+
+    if (!crop) {
+      dispatch({
+        type: 'classifyFailed',
+        id,
+        error: 'No cropped image is available for mushroom classification.',
+      })
+      return
+    }
+
+    enqueue(async () => {
+      const imageResponse = await fetch(crop)
+      if (!imageResponse.ok) {
+        throw new Error('Could not read the cropped image.')
+      }
+
+      const imageBlob = await imageResponse.blob()
+      const imageFile = new File(
+        [imageBlob],
+        `ingredient-${id}.jpg`,
+        { type: imageBlob.type || 'image/jpeg' },
+      )
+
+      return reclassifyImage(id, imageFile, name)
+    })
+      .then((response) => {
+        dispatch({
+          type: 'mushroomClassified',
+          id,
+          isPoisonous: response.is_poisonous,
+          confirm,
+        })
+      })
+      .catch((error: Error) => {
+        dispatch({
+          type: 'classifyFailed',
+          id,
+          error: error.message,
+        })
+      })
+  }
+
+  const selectIngredient = (id: string, name: string) => {
+    if (isMushroom(name)) {
+      classifySelectedMushroom(id, name, true)
+      return
+    }
+
+    dispatch({ type: 'select', id, name })
+  }
+
+  const rejectIngredient = (decision: Decision) => {
+    const nextCandidate = decision.candidates[decision.attempt + 1]
+
+    dispatch({ type: 'reject', id: decision.id })
+
+    if (nextCandidate && isMushroom(nextCandidate.ingredient_name)) {
+      classifySelectedMushroom(
+        decision.id,
+        nextCandidate.ingredient_name,
+        false,
+      )
+    }
+  }
+
   // Show the replacement picture immediately and classify it in the queue.
   const retake = (id: string, file: File) => {
     dispatch({
@@ -139,6 +222,7 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
           type: 'classified',
           id,
           candidates: predictionMapToList(response.predictions),
+          isPoisonous: response.is_poisonous,
         })
       })
       .catch((error: Error) => {
@@ -195,6 +279,8 @@ export function ReviewScreen({ decisions, dispatch }: Props) {
                         shelfIndex * SHELF_SIZE + cardIndex
                       }
                       dispatch={dispatch}
+                      onReject={rejectIngredient}
+                      onSelect={selectIngredient}
                       onRetake={setRetakeId}
                     />
                   ))}

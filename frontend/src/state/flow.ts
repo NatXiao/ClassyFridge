@@ -43,6 +43,11 @@ export const formatQty = (qty: number) => String(round2(qty)).replace('.', ',')
 
 export const MAX_GUESSES = 5
 
+const isMushroom = (name: string) => {
+  const normalized = name.trim().toLowerCase()
+  return normalized === 'mushroom' || normalized === 'mushrooms'
+}
+
 export type Decision = {
   id: string
   group: string                // deck the card sits in (label detected first)
@@ -58,6 +63,7 @@ export type Decision = {
   classifying?: boolean        // retake photo waiting in the classifier queue
   error?: string
   manual?: boolean
+  isPoisonous?: boolean | null // only meaningful when the current label is mushroom
 }
 
 export type FlowState =
@@ -71,8 +77,10 @@ export type FlowAction =
   | { type: 'reject'; id: string }
   | { type: 'confirmAll'; group: string }
   | { type: 'select'; id: string; name: string }
+  | { type: 'mushroomClassificationStarted'; id: string; name: string }
+  | { type: 'mushroomClassified'; id: string; isPoisonous: boolean; confirm: boolean }
   | { type: 'retake'; id: string; crop: string }
-  | { type: 'classified'; id: string; candidates: Prediction[] }
+  | { type: 'classified'; id: string; candidates: Prediction[]; isPoisonous: boolean }
   | { type: 'classifyFailed'; id: string; error: string }
   | { type: 'add'; name: string; qty: number; unit: Unit }
   | { type: 'remove'; id: string }
@@ -120,6 +128,9 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
         candidates: predictionMapToList(item.predictions).slice(0, MAX_GUESSES),
         attempt: 0,
         exhausted: false,
+        isPoisonous: isMushroom(item.ingredient_name)
+          ? item.is_poisonous
+          : null,
       }
     }
     return { step: 'review', analysis: action.analysis, decisions }
@@ -143,7 +154,14 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
       if (!d || d.classifying) return state
       const next = d.attempt + 1
       if (next < d.candidates.length) {
-        return put(state, { ...d, name: d.candidates[next].ingredient_name, attempt: next, status: null })
+        const name = d.candidates[next].ingredient_name
+        return put(state, {
+          ...d,
+          name,
+          attempt: next,
+          status: null,
+          isPoisonous: isMushroom(name) ? d.isPoisonous : null,
+        })
       }
       return put(state, { ...d, attempt: next, exhausted: true, status: null })
     }
@@ -157,7 +175,35 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
     }
     case 'select': {
       const d = state.decisions[action.id]
-      return d ? put(state, { ...d, name: action.name, status: 'yes', exhausted: false, error: undefined }) : state
+      return d ? put(state, {
+        ...d,
+        name: action.name,
+        status: 'yes',
+        exhausted: false,
+        error: undefined,
+        isPoisonous: null,
+      }) : state
+    }
+    case 'mushroomClassificationStarted': {
+      const d = state.decisions[action.id]
+      return d ? put(state, {
+        ...d,
+        name: action.name,
+        status: null,
+        classifying: true,
+        exhausted: false,
+        error: undefined,
+        isPoisonous: null,
+      }) : state
+    }
+    case 'mushroomClassified': {
+      const d = state.decisions[action.id]
+      return d ? put(state, {
+        ...d,
+        classifying: false,
+        status: action.confirm ? 'yes' : d.status,
+        isPoisonous: action.isPoisonous,
+      }) : state
     }
     case 'retake': {
       const d = state.decisions[action.id]
@@ -186,6 +232,9 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
         attempt: 0,
         group: candidates[0].ingredient_name,
         name: candidates[0].ingredient_name,
+        isPoisonous: isMushroom(candidates[0].ingredient_name)
+          ? action.isPoisonous
+          : null,
         pilePriority,
         status: null,
       })

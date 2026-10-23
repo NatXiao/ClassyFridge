@@ -23,6 +23,8 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
   const name = label(card.name)
   const current = candidates[attempt]
   const needsManualChoice = exhausted && status !== 'no'
+  const normalizedName = card.name.trim().toLowerCase()
+  const isMushroom = normalizedName === 'mushroom' || normalizedName === 'mushrooms'
 
   const pick = (value: string) => {
     onSelect(value)
@@ -31,6 +33,10 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
 
   return (
     <article className={`${s.card} ${s[`status_${status}`]} ${needsManualChoice ? s.exhausted : ''}`}>
+      {isMushroom && (
+        <img className={s.mushroomIcon} src="/mushroom.svg" alt="" aria-hidden="true" />
+      )}
+
       {/* --- image + badges --- */}
       <div className={s.crop}>
         {card.crop
@@ -49,6 +55,14 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
           <span className={s.busy} role="status"><Loader2 size={22} className={s.spin} /> Analysing…</span>
         )}
       </div>
+
+      {isMushroom && card.isPoisonous !== null && card.isPoisonous !== undefined && (
+        <span className={`${s.edibility} ${card.isPoisonous ? s.notEdible : s.edible}`}>
+          {card.isPoisonous
+            ? <><X size={14} strokeWidth={3} /> Not edible</>
+            : <><Check size={14} strokeWidth={3} /> Edible</>}
+        </span>
+      )}
 
       {/* --- name + status --- */}
       <div className={s.row}>
@@ -82,7 +96,7 @@ export function FoodCard({ card, onDecide, onReject, onSelect, onRetake, onRemov
             <span className={s.srOnly}>Another food</span>
             <select value="" onChange={(e) => e.target.value && pick(e.target.value)}>
               <option value="" disabled>Other…</option>
-              {CLASSES.filter((c) => !candidates.some((p) => p.ingredient_name === c.value)).map((c) => (
+              {CLASSES.map((c) => (
                 <option key={c.value} value={c.value}>{c.text}</option>
               ))}
             </select>

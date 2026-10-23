@@ -47,11 +47,13 @@ async def create_analysis(
 async def reclassify_food(
     old_prediction_index: int,
     image: UploadFile = File(...),
+    selected_ingredient: str | None = None,
 ) -> DetectedIngredient:
     content = await _read_image(image)
     return services.reclassify_food(
         old_prediction_index,
         content,
+        selected_ingredient,
     )
 
 
