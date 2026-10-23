@@ -40,8 +40,8 @@ async def create_analysis(
     )
 
 @router.post(
-    "/classify",
-    response_model=AnalysisResponse,
+    "/reclassify",
+    response_model=DetectedIngredient,
     tags=["analyses"],
 )
 async def reclassify_food( 
