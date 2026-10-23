@@ -4,8 +4,6 @@ Connect the real implementations in this file. Keeping these calls outside the
 routes prevents the HTTP layer from depending on a specific model or API.
 """
 
-import random
-
 from backend.schemas import (
     AnalysisResponse,
     ClassificationResponse,
@@ -16,7 +14,7 @@ from backend.schemas import (
     RecipeResponse,
 )
 from backend.utils.fastSam import segment_and_crop
-from backend.utils.food_classification import recognize_food
+from backend.utils.food_classification import recognize_food, recognize_food_batch
 from backend.utils.handle_images import decode_image, image_to_data_url
 from backend.utils.recipes import get_recipe_suggestions
 
@@ -39,10 +37,13 @@ def analyze_image(image: bytes) -> AnalysisResponse:
     if len(cropped_images) == 0:
         return AnalysisResponse(items=[], ingredients=[])
 
-    # TODO classify each cropped image
+    # classify every crop in one batch (#20), keep the top guesses for the review screen
+    batch = recognize_food_batch(
+        cropped_images, batch_size=len(cropped_images), top_k=TOP_K
+    )
     detected_ingredients = []
-    for index, crop in enumerate(cropped_images):
-        preds = _classify(crop)
+    for index, (crop, raw) in enumerate(zip(cropped_images, batch)):
+        preds = _to_predictions(raw)
         detected_ingredients.append(
             DetectedIngredient(
                 item_id=index,
@@ -53,7 +54,6 @@ def analyze_image(image: bytes) -> AnalysisResponse:
             )
         )
 
-    # TODO see how we could parallelize this step
     # TODO for mushroom results, use our CNN model to classify edible vs poisonous mushrooms
     # TODO return the result in an AnalysisResponse schema
 
@@ -110,11 +110,14 @@ def suggest_recipes(request: RecipeRequest) -> RecipeResponse:
 TOP_K = 5
 
 
-def _classify(crop) -> list[Prediction]:
+def _to_predictions(raw: list[dict]) -> list[Prediction]:
     return [
-        Prediction(ingredient_name=p["label"], confidence=p["confidence"])
-        for p in recognize_food(crop, top_k=TOP_K)
+        Prediction(ingredient_name=p["label"], confidence=p["confidence"]) for p in raw
     ]
+
+
+def _classify(crop) -> list[Prediction]:
+    return _to_predictions(recognize_food(crop, top_k=TOP_K))
 
 
 def classify_photo(image: bytes) -> ClassificationResponse:
