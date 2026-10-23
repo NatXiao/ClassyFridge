@@ -48,7 +48,7 @@ def analyze_image(image: bytes) -> AnalysisResponse:
             ingredient_name=preds[0]["label"],
             confidence=preds[0]["confidence"],
             image_url=image_to_data_url(crop),
-            predictions=preds,
+            predictions={p["label"]: p["confidence"] for p in preds},
             is_poisonous=is_not_edible(preds[0]["label"], crop),
         )
         for index, (crop, preds) in enumerate(zip(cropped_images, predictions))
