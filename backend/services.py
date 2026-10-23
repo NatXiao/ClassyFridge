@@ -27,7 +27,7 @@ def analyze_image(image: bytes) -> AnalysisResponse:
     decoded_image = decode_image(image)
 
     # segment and crop the images into a list of cropped images
-    result, cropped_images = segment_and_crop(
+    _, cropped_images = segment_and_crop(
         decoded_image, img_size=1024, confidence=0.8, iou=0.3
     )
 
@@ -37,41 +37,24 @@ def analyze_image(image: bytes) -> AnalysisResponse:
 
     # classify each cropped image
 
-    prediction = recognize_food_batch(cropped_images, batch_size=len(cropped_images), top_k=4)
+    predictions = recognize_food_batch(cropped_images, batch_size=len(cropped_images), top_k=4)
     detected_ingredients = [
         DetectedIngredient(
             item_id=index,
             ingredient_name=preds[0]["label"],
             confidence=preds[0]["confidence"],
+            image_url=image_to_data_url(crop),
         )
-        for index, preds in enumerate(prediction)
+        for index, (crop, preds) in enumerate(zip(cropped_images, predictions))
     ]
-    # detected_ingredients = []
-    # for index, crop in enumerate(cropped_images):
-    #     top = recognize_food(crop, top_k=4)[0]
-    #     detected_ingredients.append(
-    #         DetectedIngredient(
-    #             item_id=index,
-    #             ingredient_name=top["label"],
-    #             confidence=top["confidence"],
-    #         )
-    #     )
-    
+
+
     # TODO see how we could parallelize this step
     # TODO for mushroom results, use our CNN model to classify edible vs poisonous mushrooms
     # TODO return the result in an AnalysisResponse schema
 
     # test with only the segmentation and cropping step for now
     # assume all cropped images are mushrooms
-    #test_ingredient_names = ['carrot', 'potato', 'tomato', 'onion', 'garlic', 'pepper', 'mushroom'] 
-    # detected_ingredients = [
-    #     DetectedIngredient(
-    #         item_id=index,
-    #         ingredient_name=random.choice(test_ingredient_names),
-    #         confidence=0.9,
-    #     )
-    #     for index in range(len(cropped_images))
-    # ]
 
     ingredient_counts = {}
     for ingredient in detected_ingredients:
