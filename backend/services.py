@@ -56,8 +56,6 @@ def analyze_image(image: bytes) -> AnalysisResponse:
         for index, (crop, preds) in enumerate(zip(cropped_images, predictions))
     ]
 
-    # TODO return the result in an AnalysisResponse schema
-
     ingredient_counts = {}
     for ingredient in detected_ingredients:
         ingredient_name = ingredient.ingredient_name
