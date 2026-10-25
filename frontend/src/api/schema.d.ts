@@ -257,6 +257,7 @@ export interface operations {
         parameters: {
             query: {
                 old_prediction_index: number;
+                selected_ingredient?: string | null;
             };
             header?: never;
             path?: never;

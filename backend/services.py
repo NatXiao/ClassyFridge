@@ -75,8 +75,25 @@ def analyze_image(image: bytes) -> AnalysisResponse:
     return analysis_response
 
 
-def reclassify_food(old_detection_id: int, new_image: bytes) -> DetectedIngredient:
+def reclassify_food(
+    old_detection_id: int,
+    new_image: bytes,
+    selected_ingredient: str | None = None,
+) -> DetectedIngredient:
     decoded_image = decode_image(new_image)
+
+    if selected_ingredient is not None:
+        ingredient_name = selected_ingredient.strip().lower()
+
+        return DetectedIngredient(
+            item_id=old_detection_id,
+            ingredient_name=ingredient_name,
+            confidence=1.0,
+            image_url=image_to_data_url(decoded_image),
+            predictions={ingredient_name: 1.0},
+            is_poisonous=is_not_edible(ingredient_name, decoded_image),
+        )
+
     predictions = recognize_food(decoded_image)
 
     return DetectedIngredient(
