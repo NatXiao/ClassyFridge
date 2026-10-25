@@ -54,21 +54,21 @@ export function RecipeSheet({ recipe, decisions }: Props) {
             <span className={s.pill}><Clock size={16} /> {recipe.preparation_time_minutes} min</span>
           )}
           {base && (
-            <div className={s.portions} role="group" aria-label="Nombre de portions">
-              <button type="button" aria-label="Une portion de moins" disabled={portions <= 1}
+            <div className={s.portions} role="group" aria-label="Serving size">
+              <button type="button" aria-label="One fewer serving" disabled={portions <= 1}
                 onClick={() => setPortions((p) => Math.max(1, p - 1))}><Minus size={16} /></button>
-              <span><Users size={16} /> {portions} portion{portions > 1 ? 's' : ''}</span>
-              <button type="button" aria-label="Une portion de plus"
+              <span><Users size={16} /> {portions} serving{portions > 1 ? 's' : ''}</span>
+              <button type="button" aria-label="One more serving"
                 onClick={() => setPortions((p) => p + 1)}><Plus size={16} /></button>
             </div>
           )}
         </div>
       </header>
       <div className={s.columns}>
-        <section className={s.ingredients} aria-label="Ingrédients">
-          <h3>Ingrédients</h3>
+        <section className={s.ingredients} aria-label="Ingredients">
+          <h3>Ingredients</h3>
 
-          <p className={s.groupYes}>Dans ton frigo</p>
+          <p className={s.groupYes}>In your fridge</p>
           <ul className={s.list}>
             {have.map((ing, i) => {
               const need = ing.amount * scale
@@ -84,7 +84,7 @@ export function RecipeSheet({ recipe, decisions }: Props) {
                   <span className={s.amount}>{formatAmount(need, ing.unit)}</span>
                   <span className={s.name}>{label(ing.name)}</span>
                 {short && stock && (
-                  <span className={s.short}><AlertTriangle size={14} /> tu en as {formatQty(stock.qty)} {UNITS[stock.unit].short}</span>
+                  <span className={s.short}><AlertTriangle size={14} /> You have {formatQty(stock.qty)} {UNITS[stock.unit].short}</span>
                 )}
                 </li>
               )
@@ -93,7 +93,7 @@ export function RecipeSheet({ recipe, decisions }: Props) {
 
           {missing.length > 0 && (
             <>
-              <p className={s.groupMissing}>À ajouter</p>
+              <p className={s.groupMissing}>To add</p>
               <ul className={s.list}>
                 {missing.map((ing, i) => (
                   <li key={i}>

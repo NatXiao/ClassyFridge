@@ -4,8 +4,8 @@ import s from './Header.module.css'
 
 const STEPS = [
   { key: 'upload', label: 'Photo' },
-  { key: 'review', label: 'Vérifier' },
-  { key: 'recipes', label: 'Recettes' },
+  { key: 'review', label: 'Review' },
+  { key: 'recipes', label: 'Recipes' },
 ] as const
 
 export function Header({ step }: { step: FlowState['step'] }) {
