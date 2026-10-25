@@ -24,11 +24,11 @@ export function UploadScreen({ dispatch }: { dispatch: Dispatch<FlowAction> }) {
   return (
     <main className={s.layout}>
       <section className={s.intro}>
-        <p className={s.kicker}>Étape 1 sur 3</p>
-        <h1 className={s.title}>Qu'est-ce qui traîne sur ta table&nbsp;?</h1>
+        <p className={s.kicker}>Step 1 of 3</p>
+        <h1 className={s.title}>What&apos;s on your table&nbsp;?</h1>
         <p className={s.lead}>
-          Dépose une photo de tes aliments. On les reconnaît, on les range dans le frigo,
-          tu valides — et on te propose 3 recettes avec ce que tu as.
+          Upload a photo of your ingredients. We&apos;ll recognise them, put them in the
+          fridge, and suggest recipes using what you have.
         </p>
       </section>
 
@@ -37,13 +37,13 @@ export function UploadScreen({ dispatch }: { dispatch: Dispatch<FlowAction> }) {
           <div {...getRootProps({ className: `${s.drop} ${isDragActive ? s.dragging : ''}` })}>
             <input {...getInputProps()} />
             {analysis.isPending ? (
-              <p className={s.dropTitle}>On range tes courses…</p>
+              <p className={s.dropTitle}>Putting your ingredients away…</p>
             ) : (
               <>
                 <span className={s.icon}><Camera size={36} color="#fff" /></span>
-                <p className={s.dropTitle}>{isDragActive ? 'Lâche-la !' : 'Glisse ta photo ici'}</p>
+                <p className={s.dropTitle}>{isDragActive ? 'Drop it!' : 'Drop your photo here'}</p>
                 <button type="button" className={s.button} onClick={open}>
-                  <Upload size={18} /> Choisir une photo
+                  <Upload size={18} /> Choose a photo
                 </button>
                 {analysis.isError && <p className={s.error}>{analysis.error.message}</p>}
               </>

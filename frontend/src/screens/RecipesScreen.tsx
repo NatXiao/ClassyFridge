@@ -21,12 +21,12 @@ export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
   return (
     <main className={s.layout}>
       <div className={s.fridgeBottom}>
-        <span>Étagères vides — <strong>{pantry.length} aliments</strong> sont descendus sur la table</span>
-        <button type="button" className={s.link} onClick={() => dispatch({ type: 'backToReview' })}>Modifier</button>
+        <span>Empty shelves — <strong>{pantry.length} ingredients</strong> are now on the table</span>
+        <button type="button" className={s.link} onClick={() => dispatch({ type: 'backToReview' })}>Edit</button>
       </div>
 
-      <section className={s.table} aria-label="La table">
-        <ul className={s.pantry} aria-label="Aliments validés">
+      <section className={s.table} aria-label="Table">
+        <ul className={s.pantry} aria-label="Confirmed ingredients">
           {pantry.map((item, i) => (
             <motion.li key={`${item.name}|${item.unit}`} className={s.chip}
               initial={{ opacity: 0, y: -160 }}
@@ -40,15 +40,15 @@ export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
 
         {recipes.length === 0 ? (
           <div className={s.sheet}>
-            <h2>Aucune recette trouvée</h2>
-            <p>Essaie de valider plus d'aliments, ou reprends une autre photo.</p>
+            <h2>No recipes found</h2>
+            <p>Try confirming more ingredients or upload another photo.</p>
           </div>
         ) : (
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + pantry.length * 0.06 + 0.2 }}>
-            <h1 className={s.title}>{recipes.length} recette{recipes.length > 1 ? 's' : ''} avec ce que tu as</h1>
+            <h1 className={s.title}>{recipes.length} recipe{recipes.length > 1 ? 's' : ''} using what you have</h1>
 
-            <div className={s.tabs} role="group" aria-label="Choisir une recette">
+            <div className={s.tabs} role="group" aria-label="Choose a recipe">
               {recipes.map((r, i) => (
                 <button key={r.recipe_id} type="button" className={s.tab}
                   aria-pressed={i === selected} onClick={() => setSelected(i)}>
@@ -67,11 +67,11 @@ export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
                     />
                   )}
                   <span className={s.tabText}>
-                    <span className={s.tabNum}>Recette {i + 1} </span>
+                    <span className={s.tabNum}>Recipe {i + 1} </span>
                     <span className={s.tabTitle}>{r.title} </span>
                     <span className={s.muted}>
                       {r.preparation_time_minutes ? `${r.preparation_time_minutes} min · ` : ''}
-                      utilise {r.ingredients.filter((ingredient) => ingredient.available).length} de tes aliments
+                      uses {r.ingredients.filter((ingredient) => ingredient.available).length} of your ingredients
                     </span>
                   </span>
                 </button>
@@ -91,8 +91,8 @@ export function RecipesScreen({ recipes, decisions, dispatch }: Props) {
       <div className={s.tableEdge} aria-hidden="true" />
 
       <div className={s.footer}>
-        <button type="button" className={s.secondary} onClick={() => dispatch({ type: 'backToReview' })}>Retour aux aliments</button>
-        <button type="button" className={s.primary} onClick={() => dispatch({ type: 'reset' })}>Nouvelle photo</button>
+        <button type="button" className={s.secondary} onClick={() => dispatch({ type: 'backToReview' })}>Back to ingredients</button>
+        <button type="button" className={s.primary} onClick={() => dispatch({ type: 'reset' })}>New photo</button>
       </div>
     </main>
   )

@@ -1,6 +1,6 @@
 import { useId, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Plus } from 'lucide-react'
-import { SUGGESTIONS, toEnglish } from '../api/labels'
+import { SUGGESTIONS } from '../api/labels'
 import { UNITS, type Unit } from '../state/flow'
 import { QtyInput } from './QtyInput'
 import s from './AddIngredient.module.css'
@@ -20,13 +20,12 @@ export function AddIngredient({ onAdd }: Props) {
   const listId = useId()
 
   const matches = SUGGESTIONS
-    .map(([fr]) => fr)
-    .filter((fr) => norm(fr).includes(norm(name)) && norm(fr) !== norm(name))
+    .filter((suggestion) => norm(suggestion).includes(norm(name)) && norm(suggestion) !== norm(name))
     .slice(0, 8)
   const showList = open && matches.length > 0
 
-  const pick = (fr: string) => {
-    setName(fr)
+  const pick = (suggestion: string) => {
+    setName(suggestion)
     setOpen(false)
     setActive(-1)
   }
@@ -40,7 +39,7 @@ export function AddIngredient({ onAdd }: Props) {
       e.preventDefault()
       setActive((a) => Math.max(a - 1, -1))
     } else if (e.key === 'Enter' && showList && active >= 0) {
-      e.preventDefault() // choisir la suggestion, pas envoyer le formulaire
+      e.preventDefault()
       pick(matches[active])
     } else if (e.key === 'Escape') {
       setOpen(false)
@@ -50,7 +49,7 @@ export function AddIngredient({ onAdd }: Props) {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
-    onAdd(toEnglish(name), qty, unit)
+    onAdd(name.trim().toLowerCase(), qty, unit)
     setName('')
     setQty(1)
     setUnit('')
@@ -59,10 +58,10 @@ export function AddIngredient({ onAdd }: Props) {
 
   return (
     <form className={s.form} onSubmit={submit}>
-      <h3 className={s.title}>Il manque quelque chose&nbsp;?</h3>
+      <h3 className={s.title}>Missing something&nbsp;?</h3>
 
       <div className={s.field}>
-        <label htmlFor={`${listId}-input`}>Aliment</label>
+        <label htmlFor={`${listId}-input`}>Ingredient</label>
         <div className={s.combo}>
           <input
             id={`${listId}-input`}
@@ -73,7 +72,7 @@ export function AddIngredient({ onAdd }: Props) {
             aria-activedescendant={showList && active >= 0 ? `${listId}-${active}` : undefined}
             autoComplete="off"
             value={name}
-            placeholder="ex. Viande hachée"
+            placeholder="e.g. ground beef"
             onChange={(e) => { setName(e.target.value); setOpen(true); setActive(-1) }}
             onFocus={() => setOpen(true)}
             onBlur={() => setOpen(false)}
@@ -81,18 +80,18 @@ export function AddIngredient({ onAdd }: Props) {
           />
           {showList && (
             <ul id={listId} role="listbox" className={s.listbox}>
-              {matches.map((fr, i) => (
+              {matches.map((suggestion, i) => (
                 <li
-                  key={fr}
+                  key={suggestion}
                   id={`${listId}-${i}`}
                   role="option"
                   aria-selected={i === active}
                   className={i === active ? s.optionActive : s.option}
                   // mousedown + preventDefault : le champ ne perd pas le focus avant le clic
-                  onMouseDown={(e) => { e.preventDefault(); pick(fr) }}
+                  onMouseDown={(e) => { e.preventDefault(); pick(suggestion) }}
                   onMouseEnter={() => setActive(i)}
                 >
-                  {fr}
+                  {suggestion}
                 </li>
               ))}
             </ul>
@@ -101,12 +100,12 @@ export function AddIngredient({ onAdd }: Props) {
       </div>
 
       <div className={`${s.small} ${s.qtyField}`}>
-        <span>Quantité</span>
+        <span>Quantity</span>
         <QtyInput label="l'aliment" qty={qty} unit={unit} onChange={setQty} className={s.qtyBox} />
       </div>
 
       <label className={s.small}>
-        <span>Unité</span>
+        <span>Unit</span>
         <select value={unit} onChange={(e) => {
           const u = e.target.value as Unit
           setUnit(u)
@@ -118,7 +117,7 @@ export function AddIngredient({ onAdd }: Props) {
         </select>
       </label>
 
-      <button type="submit" className={s.add}><Plus size={18} /> Ajouter</button>
+      <button type="submit" className={s.add}><Plus size={18} /> Add</button>
     </form>
   )
 }

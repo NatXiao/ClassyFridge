@@ -35,7 +35,7 @@ export const stepDown = (qty: number, unit: Unit) => {
 }
 
 // French-style display: 1.5 → "1,5"
-export const formatQty = (qty: number) => String(round2(qty)).replace('.', ',')
+export const formatQty = (qty: number) => String(round2(qty))
 
 /* --------------------------------------------------------------------------
    Decisions: one per card = one per crop (or per manual item)
